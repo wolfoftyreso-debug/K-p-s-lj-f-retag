@@ -1,0 +1,98 @@
+name: Package A
+
+on:
+  pull_request:
+  push:
+    branches: [main, docs/phase-0-foundation]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: package-a-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18.6@sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280
+        env:
+          POSTGRES_USER: foundation_test_admin
+          POSTGRES_DB: foundation_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ['127.0.0.1:5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U foundation_test_admin -d foundation_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      GOTOOLCHAIN: local
+      REQUIRE_INTEGRATION: '1'
+      TEST_DATABASE_URL: postgres://foundation_test_admin@127.0.0.1:5432/foundation_test?sslmode=disable
+      TEST_API_DATABASE_URL: postgres://packagea_test_api@127.0.0.1:5432/foundation_test?sslmode=disable
+      TEST_WORKER_DATABASE_URL: postgres://packagea_test_worker@127.0.0.1:5432/foundation_test?sslmode=disable
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Record exact clean checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)"
+          mkdir -p .tools/evidence
+          git rev-parse HEAD > .tools/evidence/commit.txt
+          printf 'run_id=%s\nattempt=%s\n' "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" > .tools/evidence/run.txt
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.27.1'
+          cache: false
+      - name: Install pinned analysis tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          go install golang.org/x/vuln/cmd/govulncheck@v1.8.0
+          go install github.com/securego/gosec/v2/cmd/gosec@v2.29.0
+          python3 -m venv .tools/contracts
+          .tools/contracts/bin/python -m pip install -r scripts/requirements-checks.txt
+          echo "$PWD/.tools/contracts/bin" >> "$GITHUB_PATH"
+          mkdir -p .tools/gitleaks
+          cd .tools/gitleaks
+          curl --fail --location --retry 3 -O https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          curl --fail --location --retry 3 -O https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_checksums.txt
+          grep ' gitleaks_8.30.1_linux_x64.tar.gz$' gitleaks_8.30.1_checksums.txt | sha256sum --check --strict
+          tar -xzf gitleaks_8.30.1_linux_x64.tar.gz
+          echo "$PWD" >> "$GITHUB_PATH"
+      - name: Apply reviewed migrations and create restricted test identities
+        shell: bash
+        env:
+          MIGRATION_DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          go run ./cmd/migrate apply
+          psql "$TEST_DATABASE_URL" -f scripts/dev/test-identities.sql
+      - name: Build independent processes
+        run: |
+          go build -trimpath -o .tools/bin/api ./cmd/api
+          go build -trimpath -o .tools/bin/worker ./cmd/worker
+          go build -trimpath -o .tools/bin/migrate ./cmd/migrate
+      - name: Run required verification
+        shell: pwsh
+        run: ./scripts/verify.ps1
+      - name: Preserve verification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: package-a-evidence-${{ github.sha }}-${{ github.run_attempt }}
+          path: |
+            .tools/evidence/*.json
+            .tools/evidence/*.jsonl
+            .tools/evidence/*.txt
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14

@@ -1,0 +1,8 @@
+title = "Package A repository secret scan"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Ignored local toolchains, disposable PostgreSQL state and local evidence; never repository source"
+paths = ['''(^|[\\/])\.tools([\\/]|$)''']

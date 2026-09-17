@@ -1,0 +1,6 @@
+title = "Package A Git history secret scan"
+
+# Git history must scan every committed path, including accidentally force-added
+# local tooling/data. Directory-scan exclusions belong only in .gitleaks.toml.
+[extend]
+useDefault = true

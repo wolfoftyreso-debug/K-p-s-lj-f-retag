@@ -1,0 +1,29 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Package A operational API",
+    "version": "0.1.0",
+    "description": "Operational health contract only. No marketplace or authentication journey is implemented. The normal API composition denies all /api/v1 protected requests until an approved authentication adapter is integrated."
+  },
+  "paths": {
+    "/health/live": {
+      "get": {
+        "operationId": "getLiveness",
+        "responses": {
+          "200": {"description": "Process can serve HTTP independently of database availability", "content": {"application/json": {"schema": {"type":"object", "required":["status"], "properties":{"status":{"const":"alive"}}, "additionalProperties":false}}}},
+          "503": {"description": "Bounded request failed", "content":{"application/json":{"schema":{"$ref":"#/components/schemas/Error"}}}}
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "operationId": "getReadiness",
+        "responses": {
+          "200": {"description":"Process is accepting work and its database check succeeded", "content":{"application/json":{"schema":{"type":"object","required":["status"],"properties":{"status":{"const":"ready"}},"additionalProperties":false}}}},
+          "503": {"description":"Database unavailable, timeout or process draining", "content":{"application/json":{"schema":{"$ref":"#/components/schemas/Error"}}}}
+        }
+      }
+    }
+  },
+  "components": {"schemas": {"Error": {"type":"object","required":["error"],"additionalProperties":false,"properties":{"error":{"type":"object","required":["code","request_id"],"additionalProperties":false,"properties":{"code":{"type":"string"},"request_id":{"type":"string","format":"uuid"}}}}}}}
+}

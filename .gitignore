@@ -1,0 +1,28 @@
+# Local credentials and environment configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Runtime and build output
+node_modules/
+.next/
+coverage/
+dist/
+bin/
+*.log
+
+# Terraform state and local plans may contain sensitive values
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+!*.example.tfvars
+crash.log
+
+# Local tooling and operating system files
+.DS_Store
+Thumbs.db
+.tools/
