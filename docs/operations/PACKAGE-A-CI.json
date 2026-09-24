@@ -168,5 +168,80 @@
     "This is Package A, not P0.4 completion or production deployment.",
     "cmd/migrate has no unit test files; executable build and database migration runs succeeded.",
     "Any later commit requires its own CI result."
-  ]
+  ],
+  "release_baseline_commit": "cad0afde0b714238ceafc91f3fd558b5161b4122",
+  "follow_up": {
+    "commit": "cad0afde0b714238ceafc91f3fd558b5161b4122",
+    "run_id": 35946388447,
+    "job_id": 107465158911,
+    "url": "https://github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/actions/runs/35946388447",
+    "conclusion": "success",
+    "artifact_id": 10787236244,
+    "artifact_sha256": "c1734ec26edbbb30fb6897077599c0c577615ef78d1d97aec0ee701b58a05142",
+    "download_digest_verified": true,
+    "tests": {
+      "tests.jsonl": {
+        "passed_packages": 7,
+        "top_level_passed": 43,
+        "subtests_passed": 56,
+        "failed_events": 0,
+        "skipped_tests": 0
+      },
+      "race.jsonl": {
+        "passed_packages": 7,
+        "top_level_passed": 43,
+        "subtests_passed": 56,
+        "failed_events": 0,
+        "skipped_tests": 0
+      }
+    },
+    "gosec": {
+      "files": 12,
+      "lines": 1389,
+      "nosec": 0,
+      "found": 0
+    },
+    "govulncheck": "No vulnerabilities found.",
+    "worktree_secret_findings": 0,
+    "history_secret_findings": 0,
+    "history_commits_scanned": 3,
+    "reports": [
+      {
+        "file": "commit.txt",
+        "sha256": "d1f40359b9bea0ff0dc54d9766550981dee6cb8c64a0694468d2c32a690d51cf"
+      },
+      {
+        "file": "gosec.json",
+        "sha256": "3d6d6d7d0977175d5a6ac74d22333cef6c8a4a05b9f47049e71082b849f114ee"
+      },
+      {
+        "file": "govulncheck.jsonl",
+        "sha256": "2d380e3c3cf055a021f65594e6c0916786593a11a9baf5dbb5217c3983199abd"
+      },
+      {
+        "file": "govulncheck.txt",
+        "sha256": "3016e51e4eac0d421674d2128bbbdefb2924b4646e0c14a1ab034977ad73fae5"
+      },
+      {
+        "file": "race.jsonl",
+        "sha256": "548c34b32f4ba3985309cb5d5b18a77d72ef3c0eaeae72982b74786b8e0b424b"
+      },
+      {
+        "file": "run.txt",
+        "sha256": "1cccf1e8a7103b662f5e541ee3521adf520d80623dae1a30c4f4113b1e4de19e"
+      },
+      {
+        "file": "secrets-history.json",
+        "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      {
+        "file": "secrets-worktree.json",
+        "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      {
+        "file": "tests.jsonl",
+        "sha256": "db4239b9f8533e24220592dcf858c7180fd4c1986458ad94a5bba6be6e216bdf"
+      }
+    ]
+  }
 }
