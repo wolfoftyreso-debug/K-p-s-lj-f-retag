@@ -9,12 +9,42 @@ $pgBin = Join-Path $toolsDir 'pgsql/bin'
 $localDir = Join-Path $toolsDir 'local-postgres'
 $dataDir = Join-Path $localDir 'data'
 $settingsPath = Join-Path $localDir 'connection.json'
+
+function Assert-LocalPostgresAccess([string]$Path, [Security.Principal.SecurityIdentifier]$UserSid, [switch]$ExplicitOnly) {
+    $items = @(Get-Item -LiteralPath $Path -Force)
+    $items += @(Get-ChildItem -LiteralPath $Path -Force -Recurse -ErrorAction Stop)
+    foreach ($item in $items) {
+        if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw 'Local PostgreSQL files must not contain reparse points; inspect the local directory manually.'
+        }
+        $acl = Get-Acl -LiteralPath $item.FullName -ErrorAction Stop
+        $descriptor = [Security.AccessControl.RawSecurityDescriptor]::new($acl.GetSecurityDescriptorBinaryForm(), 0)
+        if ($null -eq $descriptor.DiscretionaryAcl -or $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -ne $UserSid.Value) {
+            throw 'Local PostgreSQL files require the current user as owner and an explicit access-control list.'
+        }
+        foreach ($rule in $acl.GetAccessRules($true, !$ExplicitOnly, [Security.Principal.SecurityIdentifier])) {
+            if ($rule.AccessControlType -eq [Security.AccessControl.AccessControlType]::Allow -and $rule.IdentityReference.Value -ne $UserSid.Value) {
+                throw 'Unsafe local PostgreSQL access grant found; inspect permissions manually before continuing.'
+            }
+        }
+    }
+}
+
 if (!(Test-Path -LiteralPath (Join-Path $pgBin 'pg_ctl.exe'))) { throw 'Run Bootstrap-Windows.ps1 first.' }
+$currentIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
+try {
+    $identity = $currentIdentity.Name
+    $userSid = $currentIdentity.User
+} finally { $currentIdentity.Dispose() }
+# Do not preserve an unsafe explicit grant on a reused credential/data path.
+if (Test-Path -LiteralPath $localDir) { Assert-LocalPostgresAccess $localDir $userSid -ExplicitOnly }
 New-Item -ItemType Directory -Force -Path $localDir | Out-Null
 # Credentials/data are local user-only files, in the ignored tools directory.
-$identity = [Security.Principal.WindowsIdentity]::GetCurrent().Name
 & icacls.exe $localDir /inheritance:r /grant:r ($identity + ':(OI)(CI)F') | Out-Null
 if ($LASTEXITCODE -ne 0) { throw 'Restricting the local database directory ACL failed.' }
+# Check effective grants on every existing descendant, including protected ACLs,
+# before reading credentials or touching the database.
+Assert-LocalPostgresAccess $localDir $userSid
 if (Test-Path -LiteralPath $settingsPath) {
     $settings = Get-Content -LiteralPath $settingsPath -Raw | ConvertFrom-Json
     if ($settings.Port -ne $Port) { throw 'Existing local database uses a different port; use its configured port.' }
@@ -46,7 +76,9 @@ log_statement = 'none'
 "@ | Add-Content -LiteralPath (Join-Path $dataDir 'postgresql.conf') -Encoding utf8
 }
 & (Join-Path $pgBin 'pg_ctl.exe') status -D $dataDir *> $null
-if ($LASTEXITCODE -ne 0) {
+$statusCode = $LASTEXITCODE
+if ($statusCode -notin @(0, 3)) { throw "Could not determine local PostgreSQL status (exit $statusCode)." }
+if ($statusCode -eq 3) {
     $serverLog = Join-Path $localDir 'server.log'
     $startOut = Join-Path $localDir 'start.stdout.log'
     $startErr = Join-Path $localDir 'start.stderr.log'

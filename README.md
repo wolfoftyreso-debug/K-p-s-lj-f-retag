@@ -2,7 +2,7 @@
 
 Production foundation for a European marketplace for businesses and operating businesses for sale.
 
-**Current delivery: Phase 0 Package A — functionally accepted; committed clean-checkout CI gate in progress.** Go API/worker, workspace isolation and atomic audit/outbox are implemented within the approved scope. Read the [local completion report](docs/operations/PACKAGE-A-REPORT.md) and [release-gate record](docs/operations/PACKAGE-A-RELEASE-GATE.md) for evidence and limitations. This is a backend foundation, not a deployed marketplace or a claim of production readiness. The repository name is not an approved product brand.
+**Current delivery: Phase 0 Package A — committed baseline passed clean-checkout Linux CI.** Go API/worker, workspace isolation and atomic audit/outbox are implemented within the approved scope. Read the [local completion report](docs/operations/PACKAGE-A-REPORT.md) and [release-gate record](docs/operations/PACKAGE-A-RELEASE-GATE.md) for exact commit/run evidence and follow-up verification. The [P0.4 identity proposal](docs/architecture/P0.4-IDENTITY-DESIGN.md) awaits its material D03 decisions before implementation. This is a backend foundation, not a deployed marketplace or a claim of production readiness. The repository name is not an approved product brand.
 
 Start with the [Package A runbook](docs/operations/PACKAGE-A.md), [Phase 0 implementation plan](docs/architecture/PHASE-0-PLAN.md) and [decision register](docs/architecture/DECISIONS.md). The user approved P0.1–P0.3 on 2026-09-17 and subsequently authorized commit/publication/CI plus P0.4 after that release gate passes. Later packages remain unapproved.
 

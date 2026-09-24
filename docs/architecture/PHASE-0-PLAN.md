@@ -1,6 +1,6 @@
 # Phase 0 implementation plan
 
-Original plan: 2026-09-16. Approval and implementation addenda: 2026-09-17. Status: **P0.1–P0.3 functionally accepted; committed clean-checkout CI gate in progress. P0.4 is authorized after that gate passes; later packages are not approved.** The original proposal below is retained as planning history. The [completion report](../operations/PACKAGE-A-REPORT.md) records local implementation and evidence; the [release-gate record](../operations/PACKAGE-A-RELEASE-GATE.md) tracks the subsequently required reproducibility proof.
+Original plan: 2026-09-16. Approval/implementation: 2026-09-17. Evidence update: 2026-09-24. Status: **P0.1–P0.3 committed baseline passed clean-checkout CI; P0.4 decision proposal ready, identity implementation awaiting D03. Later packages are not approved.** The original proposal below is retained as planning history. The [completion report](../operations/PACKAGE-A-REPORT.md) records local implementation and evidence; the [release-gate record](../operations/PACKAGE-A-RELEASE-GATE.md) records reproducibility proof and separately verified follow-ups. The concrete [P0.4 proposal](P0.4-IDENTITY-DESIGN.md) supersedes no business/security decision without owner acceptance.
 
 ## Approval addendum — 2026-09-17
 

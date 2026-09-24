@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "recorded_on": "2026-09-24",
+  "baseline_commit": "b44cf0ec28a9a7c58c05e1607dc184fac7f9ab7d",
+  "baseline_tree": "3b708eaf7faa35711efaa9a9a45a8591b464e34d",
+  "ci": {
+    "provider": "GitHub Actions",
+    "run_id": 35170643556,
+    "job_id": 105041365457,
+    "attempt": 1,
+    "url": "https://github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/actions/runs/35170643556",
+    "conclusion": "success",
+    "runner": "Ubuntu 24.04.5 amd64",
+    "runner_image": "20260907.300.1",
+    "fresh_checkout_verified": true,
+    "artifact_id": 10476308292,
+    "artifact_sha256": "2f6284decf968e46a5c0cab4ee2918d5a15a833948466e69c375a046123b4d3a",
+    "artifact_expires_at": "2026-10-01T01:30:30Z",
+    "download_digest_verified": true
+  },
+  "tests": {
+    "tests.jsonl": {
+      "passed_packages": 7,
+      "top_level_passed": 43,
+      "subtests_passed": 56,
+      "failed_events": 0,
+      "skipped_tests": 0,
+      "packages_without_tests": [
+        "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/cmd/migrate"
+      ],
+      "packages": [
+        {
+          "name": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/cmd/api",
+          "elapsed_seconds": 0.039
+        },
+        {
+          "name": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/cmd/worker",
+          "elapsed_seconds": 0.034
+        },
+        {
+          "name": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/config",
+          "elapsed_seconds": 0.013
+        },
+        {
+          "name": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/httpapi",
+          "elapsed_seconds": 0.034
+        },
+        {
+          "name": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/lifecycle",
+          "elapsed_seconds": 0.035
+        },
+        {
+          "name": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/db/migrations",
+          "elapsed_seconds": 0.217
+        },
+        {
+          "name": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/store",
+          "elapsed_seconds": 0.774
+        }
+      ]
+    },
+    "race.jsonl": {
+      "passed_packages": 7,
+      "top_level_passed": 43,
+      "subtests_passed": 56,
+      "failed_events": 0,
+      "skipped_tests": 0,
+      "packages_without_tests": [
+        "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/cmd/migrate"
+      ],
+      "packages": [
+        {
+          "name": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/cmd/api",
+          "elapsed_seconds": 1.041
+        },
+        {
+          "name": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/cmd/worker",
+          "elapsed_seconds": 1.044
+        },
+        {
+          "name": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/config",
+          "elapsed_seconds": 1.016
+        },
+        {
+          "name": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/db/migrations",
+          "elapsed_seconds": 1.175
+        },
+        {
+          "name": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/httpapi",
+          "elapsed_seconds": 1.038
+        },
+        {
+          "name": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/lifecycle",
+          "elapsed_seconds": 1.037
+        },
+        {
+          "name": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/store",
+          "elapsed_seconds": 1.823
+        }
+      ]
+    }
+  },
+  "gosec": {
+    "files": 12,
+    "lines": 1389,
+    "nosec": 0,
+    "found": 0
+  },
+  "govulncheck": "No vulnerabilities found.",
+  "secrets": {
+    "worktree_findings": 0,
+    "history_findings": 0
+  },
+  "checks_passed": [
+    "format",
+    "vet",
+    "go mod verify",
+    "independent api/worker/migrate builds",
+    "normal unit/integration tests",
+    "race unit/integration tests",
+    "real PostgreSQL migration application and integrity tests",
+    "OpenAPI",
+    "documentation links",
+    "dependency vulnerability scan",
+    "SAST",
+    "secret scans",
+    "whitespace"
+  ],
+  "reports": [
+    {
+      "file": "commit.txt",
+      "sha256": "84d4a2d4256da868dac730aa57138054fe9cb8646620beff184fa9c5910ee939"
+    },
+    {
+      "file": "gosec.json",
+      "sha256": "3d6d6d7d0977175d5a6ac74d22333cef6c8a4a05b9f47049e71082b849f114ee"
+    },
+    {
+      "file": "govulncheck.jsonl",
+      "sha256": "dc2a4527f45b2b531ebd181117d649f1fd6529aefe27acff03499ae3965cb963"
+    },
+    {
+      "file": "govulncheck.txt",
+      "sha256": "3016e51e4eac0d421674d2128bbbdefb2924b4646e0c14a1ab034977ad73fae5"
+    },
+    {
+      "file": "race.jsonl",
+      "sha256": "aec1a64252115a844221ddfa96e7d12851cc60b4602de362c7c6ca80d16798a0"
+    },
+    {
+      "file": "run.txt",
+      "sha256": "8312fd00ac0104ef6b8077ca8a3b673eda44ff63823d2f523b2806262b932375"
+    },
+    {
+      "file": "secrets-history.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "file": "secrets-worktree.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "file": "tests.jsonl",
+      "sha256": "a30dcdf85a8220918c078783c854aa42e8df7fd5011de4596bfc0ad6b2f8cb77"
+    }
+  ],
+  "limitations": [
+    "This is Package A, not P0.4 completion or production deployment.",
+    "cmd/migrate has no unit test files; executable build and database migration runs succeeded.",
+    "Any later commit requires its own CI result."
+  ]
+}

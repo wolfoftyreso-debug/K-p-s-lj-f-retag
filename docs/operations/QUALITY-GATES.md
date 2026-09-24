@@ -8,7 +8,7 @@ Each change names affected requirements, decisions, tests run and residual risk.
 
 The table specifies proposed stable check names and expected behavior for implementation. Exact tooling versions are chosen and pinned in P0.1. A release cannot relabel a relevant failing check as not applicable.
 
-Package A local results are in the [completion report](PACKAGE-A-REPORT.md). Go tests and race detection ran on Windows/amd64 against PostgreSQL 18.6 with required integration enabled. This proves that verification platform; Linux hosted CI and release-artifact verification remain unexecuted and must pass before a Linux deployment. Gates for absent frontend, document, payment, container and Terraform capabilities are not applicable to this package, not passed controls.
+Package A's original local results are in the [completion report](PACKAGE-A-REPORT.md). Go tests and race detection also passed on Linux/amd64 from the committed baseline in [the release-gate record](PACKAGE-A-RELEASE-GATE.md), with actual PostgreSQL 18.6 and required integration enabled. Later commits need their own CI result. Windows ACL/helper proofs are separately local; production release-artifact/deployment validation remains unexecuted. Gates for absent frontend, document, payment, container and Terraform capabilities are not applicable to this package, not passed controls.
 
 | Gate / proposed check | Required evidence | Owner role / activation |
 | --- | --- | --- |

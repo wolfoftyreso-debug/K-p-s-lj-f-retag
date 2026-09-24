@@ -2,6 +2,8 @@
 
 These scripts support synthetic tests on this Windows workstation. They do not select a production database version, deploy AWS, install a service, or change machine configuration. PowerShell 7 and Windows `tar.exe` are prerequisites. `.tools/` is ignored by Git; local database credentials and data receive an ACL limited to the current Windows user.
 
+Startup rejects pre-existing explicit access grants to other identities throughout the local PostgreSQL directory, including credential files and database descendants. After removing root inheritance, it verifies effective grants throughout that directory before reading credentials. Foreign owners, null ACLs, reparse points and unreadable ACLs fail closed; permissions need manual inspection rather than silent repair of a shared directory. These checks do not isolate data from a Windows administrator controlling the workstation.
+
 Bootstrap verifies cached/downloaded archive hashes on every run. A completed installation marker records its archive hash, executable hash and exact version; matching installations are reused without extraction. A partial installation, missing/stale marker, changed executable or version mismatch fails explicitly and requires local inspection/repair. Do not run initial installation while tools from that installation are active.
 
 ## Pinned download provenance (2026-09-17)
@@ -37,3 +39,11 @@ go test -race -count=1 ./...
 Confirm the migration command's configuration contract in its source/runbook if it changes. Runtime commands must use the corresponding restricted API/worker DSN; the administrator DSN is for migrations and test setup only. `Set-LocalTestEnvironment.ps1` only sets variables in the calling shell when dot-sourced. It sets `REQUIRE_INTEGRATION=1` so absent integration configuration fails instead of passing via skipped tests. `sslmode=disable` is only for the loopback synthetic database. PostgreSQL listens only on `127.0.0.1`, uses SCRAM passwords, and retains the local database between runs. Never use these credentials, administrator role, or settings in a deployed environment.
 
 `Stop-LocalPostgres.ps1` performs a fast graceful PostgreSQL shutdown and retains data. No reset/delete command is supplied: deleting a database must be an explicit, separately reviewed operation against a confirmed local target. Backup/restore and production operational proof remain outside this development helper.
+
+Both lifecycle helpers distinguish `pg_ctl status` exit 0 (running) from exit 3 (stopped). Other results are errors, including exit 4 for an inaccessible data directory; an unknown state is never reported as stopped.
+
+## Package A release review evidence
+
+The lifecycle helper review executed 11 isolated checks: PowerShell parsing for both scripts; acceptance of current-user-only ACLs; rejection of explicit, inherited and protected-descendant foreign grants; rejection of a descendant junction; each helper rejecting native status exit 1 and 4; and shutdown reporting already stopped only for exit 3. Exit-code fixtures were compiled native executables in an ignored synthetic directory, not replacements for installed PostgreSQL binaries.
+
+Against the actual retained PostgreSQL 18.6 synthetic cluster, start from stopped, reuse of a running instance, fast graceful stop, repeated stop, restart and final stop all succeeded. The final `pg_ctl status` returned 3; data was retained. These are Windows development-helper checks, separate from Linux application CI. Local details and reviewed script hashes are recorded in ignored `.tools/helper-review/proof.json`; this paragraph is the durable result summary. No production service or data was involved.
