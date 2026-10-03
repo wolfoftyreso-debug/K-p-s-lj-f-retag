@@ -1,6 +1,6 @@
 # ADR 0007: transactional security state and typed audit attribution
 
-Date: 2026-10-03. Status: **implemented within P0.4; focused local checks passed, final package/CI verification pending**. This ADR records the persistence/authority boundary, not a provider purchase, administrative workflow or production acceptance. [ADR 0006](0006-identity-provider-and-session-policy.md) owns provider/admission/session policy; the [P0.4 threat model](../security/P0.4-THREAT-MODEL.md) owns negative evidence requirements.
+Date: 2026-10-03. Status: **implemented within P0.4; whole-repository local checks and committed clean-checkout CI passed; provider acceptance open**. This ADR records the persistence/authority boundary, not a provider purchase, administrative workflow or production acceptance. [ADR 0006](0006-identity-provider-and-session-policy.md) owns provider/admission/session policy; the [P0.4 threat model](../security/P0.4-THREAT-MODEL.md) owns negative evidence requirements.
 
 ## Context
 
@@ -38,4 +38,4 @@ Reversal requires a reviewed migration preserving both ledgers' records and type
 
 ## Acceptance evidence
 
-Focused local normal and race runs for internal/store and db/migrations passed, including the seeded Package A upgrade, identity/admission/revocation, runtime privilege and target constraints, audit rollback, idle behavior, waiting-state ordering and existing outbox/idempotency cases. The [threat model evidence table](../security/P0.4-THREAT-MODEL.md) records their exact scope and limits. Final whole-repository gates, HTTP integration acceptance, security scans and CI from the final committed source remain separately reportable; no production or provider acceptance follows from this ADR.
+Focused local normal and race runs for internal/store and db/migrations passed, including the seeded Package A upgrade, identity/admission/revocation, runtime privilege and target constraints, audit rollback, idle behavior, waiting-state ordering and existing outbox/idempotency cases. The [threat model evidence table](../security/P0.4-THREAT-MODEL.md) records their exact scope and limits. Whole-repository gates, HTTP integration, scans and exact-source clean-checkout Linux CI subsequently passed; the [P0.4 report](../operations/P0.4-REPORT.md) records the commit, run and artifact proof. No production or provider acceptance follows from this ADR.

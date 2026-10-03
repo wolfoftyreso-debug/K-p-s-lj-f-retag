@@ -1,6 +1,6 @@
 # Decision register
 
-Created: 2026-09-16. Updated: 2026-10-03. Status: **Package A baseline committed and verified in clean-checkout Linux CI. P0.4 backend implementation is in progress.** See the [local completion report](../operations/PACKAGE-A-REPORT.md) and [release-gate record](../operations/PACKAGE-A-RELEASE-GATE.md), including separately verified follow-up helpers. “Owner” describes the accountable role; named individuals have not been assigned.
+Created: 2026-09-16. Updated: 2026-10-03. Status: **Package A baseline committed and verified in clean-checkout Linux CI. P0.4 backend is committed and verified in clean-checkout CI; real-provider acceptance remains open.** See the [local completion report](../operations/PACKAGE-A-REPORT.md) and [release-gate record](../operations/PACKAGE-A-RELEASE-GATE.md), including separately verified follow-up helpers. “Owner” describes the accountable role; named individuals have not been assigned.
 
 ## P0.4 continuation — 2026-10-03
 

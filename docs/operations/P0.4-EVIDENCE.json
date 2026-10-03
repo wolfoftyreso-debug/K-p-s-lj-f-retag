@@ -1,9 +1,46 @@
 {
   "date": "2026-10-03",
-  "status": "local_verified_ci_pending_provider_acceptance_open",
+  "status": "backend_verified_in_committed_ci_provider_acceptance_open",
   "package_a_baseline": "cad0afde0b714238ceafc91f3fd558b5161b4122",
-  "source_commit": null,
-  "ci": null,
+  "source_commit": "c5fd7e6793fac3af59db7daa3089a0ed8261e818",
+  "ci": {
+    "run_id": 37087140846,
+    "job_id": 111099680284,
+    "attempt": 1,
+    "conclusion": "success",
+    "url": "https://github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/actions/runs/37087140846",
+    "commit": "c5fd7e6793fac3af59db7daa3089a0ed8261e818",
+    "clean_checkout": true,
+    "platform": "ubuntu-24.04 linux/amd64",
+    "artifact_id": 11260927111,
+    "artifact_sha256": "51d810cb268aa30645a447c12272d4047ce9bc853f218f03b893f16064da4c24",
+    "artifact_expires_at": "2026-10-17T01:45:39Z",
+    "artifact_digest_verified": true,
+    "artifact_commit_verified": true,
+    "normal": {
+      "passed_packages": 8,
+      "passed_top_level_tests": 64,
+      "passed_subtests": 213,
+      "failed": 0,
+      "skipped_tests": 0
+    },
+    "race": {
+      "passed_packages": 8,
+      "passed_top_level_tests": 64,
+      "passed_subtests": 213,
+      "failed": 0,
+      "skipped_tests": 0
+    },
+    "gosec": {
+      "files": 16,
+      "lines": 2624,
+      "findings": 0,
+      "nosec": 0
+    },
+    "govulncheck": "No vulnerabilities found",
+    "secret_findings_worktree": 0,
+    "secret_findings_history": 0
+  },
   "local": {
     "platform": "windows/amd64",
     "go": "1.27.1",
