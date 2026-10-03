@@ -2,7 +2,7 @@
 
 Production foundation for a European marketplace for businesses and operating businesses for sale.
 
-**Current delivery: Phase 0 Package A — committed baseline passed clean-checkout Linux CI.** Go API/worker, workspace isolation and atomic audit/outbox are implemented within the approved scope. Read the [local completion report](docs/operations/PACKAGE-A-REPORT.md) and [release-gate record](docs/operations/PACKAGE-A-RELEASE-GATE.md) for exact commit/run evidence and follow-up verification. The [P0.4 identity proposal](docs/architecture/P0.4-IDENTITY-DESIGN.md) awaits its material D03 decisions before implementation. This is a backend foundation, not a deployed marketplace or a claim of production readiness. The repository name is not an approved product brand.
+**Current delivery: Package A verified in clean-checkout CI; P0.4 identity backend under verification.** Go API/worker, workspace isolation and atomic audit/outbox remain the foundation. Read the [Package A release gate](docs/operations/PACKAGE-A-RELEASE-GATE.md), [P0.4 implementation/runbook](docs/operations/P0.4-IDENTITY.md) and [identity design](docs/architecture/P0.4-IDENTITY-DESIGN.md) for actual scope and open provider acceptance. This is a backend foundation, not a deployed marketplace or a claim of production readiness. The repository name is not an approved product brand.
 
 Start with the [Package A runbook](docs/operations/PACKAGE-A.md), [Phase 0 implementation plan](docs/architecture/PHASE-0-PLAN.md) and [decision register](docs/architecture/DECISIONS.md). The user approved P0.1–P0.3 on 2026-09-17 and subsequently authorized commit/publication/CI plus P0.4 after that release gate passes. Later packages remain unapproved.
 
@@ -30,7 +30,7 @@ Start with the [Package A runbook](docs/operations/PACKAGE-A.md), [Phase 0 imple
 - Repository baseline inspected in full at `e048a121492aef8a4c1aa43a004a2fe6550ffac8`.
 - The release gate uses `docs/phase-0-foundation` and requires committed source plus hosted CI evidence; no production deployment is authorized.
 - API, worker, migrations, PostgreSQL authorization and transactional processing passed the local Package A checks, including real PostgreSQL integration, race detection and security scans.
-- Public authentication, frontend, listings and AWS provisioning are outside this package. Protected HTTP requests deny access until an approved authentication adapter exists.
+- P0.4 adds strict OIDC, durable local sessions and authenticated backend contracts for the existing workspace commands. Authentication mode is explicit; disabled mode denies protected access. No visible authentication interface, listings or AWS provisioning are included. Real-provider conformance remains an independent acceptance gate.
 - Planned controls and quality gates must not be described as implemented or passing.
 
 Documentation and canonical identifiers use English. Product localization is a separate concern.

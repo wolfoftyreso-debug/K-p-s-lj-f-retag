@@ -10,7 +10,7 @@ func TestLoadValid(t *testing.T) {
 	t.Parallel()
 	for _, process := range []Process{API, Worker} {
 		t.Run(string(process), func(t *testing.T) {
-			cfg, err := Load(mapLookup(map[string]string{"DATABASE_URL": "postgres://synthetic@localhost/foundation?sslmode=disable", "HTTP_ADDR": "127.0.0.1:8080"}), process)
+			cfg, err := Load(mapLookup(map[string]string{"AUTHENTICATION_MODE": "disabled", "DATABASE_URL": "postgres://synthetic@localhost/foundation?sslmode=disable", "HTTP_ADDR": "127.0.0.1:8080"}), process)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -54,7 +54,7 @@ func TestLoadRejectsMalformedConfigurationWithoutEchoingValues(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			values := map[string]string{"DATABASE_URL": "postgres://synthetic@localhost/foundation?sslmode=disable", "HTTP_ADDR": ":8080"}
+			values := map[string]string{"AUTHENTICATION_MODE": "disabled", "DATABASE_URL": "postgres://synthetic@localhost/foundation?sslmode=disable", "HTTP_ADDR": ":8080"}
 			values[tc.key] = tc.value
 			_, err := Load(mapLookup(values), API)
 			if err == nil || strings.Contains(err.Error(), "secret-canary") {
@@ -70,7 +70,7 @@ func TestLoadAllowsVerifiedRemoteTLSAndExplicitLoopback(t *testing.T) {
 		"postgres://synthetic@127.0.0.1/foundation?sslmode=disable",
 		"postgres://synthetic@[::1]/foundation?sslmode=disable",
 	} {
-		if _, err := Load(mapLookup(map[string]string{"DATABASE_URL": dsn, "HTTP_ADDR": ":8080"}), API); err != nil {
+		if _, err := Load(mapLookup(map[string]string{"AUTHENTICATION_MODE": "disabled", "DATABASE_URL": dsn, "HTTP_ADDR": ":8080"}), API); err != nil {
 			t.Fatal(err)
 		}
 	}

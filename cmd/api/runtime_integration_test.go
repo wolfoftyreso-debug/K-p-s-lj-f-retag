@@ -25,7 +25,7 @@ func TestRuntimeStartsServesHealthAndStopsAgainstPostgres(t *testing.T) {
 	}
 	address := unusedLoopbackAddress(t)
 	values := map[string]string{
-		"DATABASE_URL": dsn, "HTTP_ADDR": address, "SHUTDOWN_TIMEOUT": "1s",
+		"AUTHENTICATION_MODE": "disabled", "DATABASE_URL": dsn, "HTTP_ADDR": address, "SHUTDOWN_TIMEOUT": "1s",
 		"WORKER_POLL_INTERVAL": "10ms", "WORKER_STATUS_INTERVAL": "1s",
 	}
 	ctx, cancel := context.WithCancel(context.Background())
@@ -101,8 +101,8 @@ func TestRuntimeStartsServesHealthAndStopsAgainstPostgres(t *testing.T) {
 func TestUnavailableDatabaseFailsStartupWithoutLeakingConfiguration(t *testing.T) {
 	address := unusedLoopbackAddress(t)
 	values := map[string]string{
-		"DATABASE_URL": "postgres://synthetic:secret-canary@" + address + "/foundation?sslmode=disable",
-		"HTTP_ADDR":    unusedLoopbackAddress(t), "STARTUP_TIMEOUT": "1s",
+		"AUTHENTICATION_MODE": "disabled", "DATABASE_URL": "postgres://synthetic:secret-canary@" + address + "/foundation?sslmode=disable",
+		"HTTP_ADDR": unusedLoopbackAddress(t), "STARTUP_TIMEOUT": "1s",
 	}
 	var logs bytes.Buffer
 	err := run(context.Background(), func(key string) string { return values[key] }, slog.New(slog.NewJSONHandler(&logs, nil)))
@@ -128,8 +128,8 @@ func TestCancellationDuringStartupStopsCleanly(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 	values := map[string]string{
-		"DATABASE_URL": "postgres://synthetic@" + unusedLoopbackAddress(t) + "/foundation?sslmode=disable",
-		"HTTP_ADDR":    unusedLoopbackAddress(t),
+		"AUTHENTICATION_MODE": "disabled", "DATABASE_URL": "postgres://synthetic@" + unusedLoopbackAddress(t) + "/foundation?sslmode=disable",
+		"HTTP_ADDR": unusedLoopbackAddress(t),
 	}
 	if err := run(ctx, func(key string) string { return values[key] }, slog.New(slog.NewJSONHandler(io.Discard, nil))); err != nil {
 		t.Fatalf("startup cancellation was not graceful: %v", err)

@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/identity"
 )
 
 type Process string
@@ -33,6 +35,9 @@ type Config struct {
 	WorkerStatusInterval time.Duration
 	WorkerMaxAttempts    int
 	MaxRequestBody       int64
+	AuthenticationMode   string
+	PublicOrigin         string
+	Identity             identity.Config
 }
 
 // Load accepts a lookup function to make configuration independent of process
@@ -98,7 +103,48 @@ func Load(lookup func(string) string, process Process) (Config, error) {
 			return Config{}, fmt.Errorf("MAX_REQUEST_BODY_BYTES must be an integer between 1 and 1048576")
 		}
 	}
+	if process == API {
+		if err := cfg.loadIdentity(lookup); err != nil {
+			return Config{}, err
+		}
+	}
 	return cfg, nil
+}
+
+func (cfg *Config) loadIdentity(lookup func(string) string) error {
+	cfg.AuthenticationMode = lookup("AUTHENTICATION_MODE")
+	keys := []string{"PUBLIC_ORIGIN", "OIDC_PROVIDER", "OIDC_ISSUER", "OIDC_CLIENT_ID", "OIDC_CLIENT_SECRET", "OIDC_ENDPOINT_ORIGINS"}
+	switch cfg.AuthenticationMode {
+	case "disabled":
+		// An explicit unavailable boundary grants no access. Misconfigured OIDC
+		// must never silently fall back to this mode or to a developer identity.
+		for _, key := range keys {
+			if lookup(key) != "" {
+				return fmt.Errorf("identity settings must be absent when AUTHENTICATION_MODE is disabled")
+			}
+		}
+		return nil
+	case "oidc":
+		cfg.PublicOrigin = lookup("PUBLIC_ORIGIN")
+		u, err := url.Parse(cfg.PublicOrigin)
+		if err != nil || u.Scheme != "https" || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || u.Path != "" || u.Opaque != "" || u.Host != strings.ToLower(u.Host) {
+			return fmt.Errorf("PUBLIC_ORIGIN must be an exact lowercase HTTPS origin without a path")
+		}
+		cfg.Identity = identity.Config{
+			Provider: lookup("OIDC_PROVIDER"), Issuer: lookup("OIDC_ISSUER"),
+			ClientID: lookup("OIDC_CLIENT_ID"), ClientSecret: lookup("OIDC_CLIENT_SECRET"),
+			RedirectURI: cfg.PublicOrigin + "/api/v1/auth/callback",
+		}
+		if origins := lookup("OIDC_ENDPOINT_ORIGINS"); origins != "" {
+			cfg.Identity.EndpointOrigins = strings.Split(origins, ",")
+		}
+		if err := cfg.Identity.Validate(); err != nil {
+			return fmt.Errorf("invalid OIDC configuration")
+		}
+		return nil
+	default:
+		return fmt.Errorf("AUTHENTICATION_MODE must explicitly be disabled or oidc")
+	}
 }
 
 // ValidateDatabaseURL requires an explicit URI host, user, database and TLS

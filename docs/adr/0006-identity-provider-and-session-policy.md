@@ -1,6 +1,6 @@
 # ADR 0006: identity provider and session policy
 
-Date: 2026-09-24. Status: **PROPOSED — awaiting D03 owner decision.** No implementation or commercial/provider provisioning approval is asserted.
+Date: 2026-09-24. Updated: 2026-10-03. Status: **Technical direction accepted for implementation by contextual user continuation; vendor selection/provisioning and live conformance remain open.** See the dated continuation evidence in the [decision register](../architecture/DECISIONS.md). No commercial/provider provisioning approval is asserted.
 
 ## Context
 
@@ -20,4 +20,4 @@ Keep immutable internal IDs and `(issuer,subject)` mappings so provider migratio
 
 ## Approval and evidence
 
-Approval pending. No provider account, UI, P0.4 source code or identity schema exists from this ADR. Real provider conformance is not run. Provider feature/cost/processing decisions and the session/security policy must be explicitly resolved before dependent implementation; no later product or AWS package begins from this proposal.
+The original 2026-09-24 proposal was pending. On 2026-10-03, following the user's continuation, engineering is implementing the technical session/admission/authorization proposal above; its original proposed wording is retained as history. Provider feature/cost/processing decisions remain open. Real provider conformance has not run. No provider account or visible authentication UI is created, and no later product or AWS package begins from this decision.

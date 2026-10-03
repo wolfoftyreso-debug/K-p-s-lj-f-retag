@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-03",
+  "status": "local_verified_ci_pending_provider_acceptance_open",
+  "package_a_baseline": "cad0afde0b714238ceafc91f3fd558b5161b4122",
+  "source_commit": null,
+  "ci": null,
+  "local": {
+    "platform": "windows/amd64",
+    "go": "1.27.1",
+    "postgresql": "18.6",
+    "command": "scripts/verify.ps1",
+    "exit_code": 0,
+    "tests": {
+      "passed_packages": 8,
+      "passed_top_level_tests": 64,
+      "passed_subtests": 213,
+      "failed": 0,
+      "skipped_tests": 0
+    },
+    "race": {
+      "passed_packages": 8,
+      "passed_top_level_tests": 64,
+      "passed_subtests": 213,
+      "failed": 0,
+      "skipped_tests": 0
+    },
+    "gosec": {
+      "files": 16,
+      "lines": 2624,
+      "findings": 0,
+      "nosec": 0
+    },
+    "govulncheck": "No vulnerabilities found",
+    "secret_findings_worktree": 0,
+    "secret_findings_history": 0,
+    "artifacts": [
+      {
+        "file": "tests.jsonl",
+        "sha256": "856ba70b3641690eb7bb7a1ed1cc7cca0500957d27c7ae8c66d5c9e95d3505fa"
+      },
+      {
+        "file": "race.jsonl",
+        "sha256": "cc445b8744be0fe70d45ecca6dc2ed06da6a37f51bc23a5b1957495ddc25ab1a"
+      },
+      {
+        "file": "gosec.json",
+        "sha256": "a1b352d795cb160a9b52e09ff4551e3d5fe9e600cee0fb0ead92bfd80e30d4a8"
+      },
+      {
+        "file": "govulncheck.jsonl",
+        "sha256": "c4a61a44c97e36165be6220b3b59a50306067346a4a694e9d96f83e1b9d22d63"
+      },
+      {
+        "file": "verification-console.txt",
+        "sha256": "4a655add40301960529339d9a9e0c6c554603d1e1c0f0a5fbfeebef5a5e066fb"
+      }
+    ]
+  },
+  "provider_conformance": "not_run_no_approved_real_tenant_or_credentials",
+  "mobbin": "not_performed_no_visible_interface"
+}

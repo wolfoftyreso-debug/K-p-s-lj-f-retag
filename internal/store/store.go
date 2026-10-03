@@ -1,5 +1,5 @@
-// Package store owns the Package A PostgreSQL boundaries. Protected operations
-// require an authenticated internal User ID; this package does not authenticate it.
+// Package store owns PostgreSQL persistence. Protected operations revalidate
+// application sessions and current scoped permissions within their transaction.
 package store
 
 import (
@@ -117,9 +117,9 @@ FROM pg_roles r WHERE r.rolname=current_user`, s.pool.Config().ConnConfig.User).
 func (s *Store) Close() { s.pool.Close() }
 func (s *Store) Ping(ctx context.Context) error {
 	// Validate a relation the process actually depends on, not merely the socket.
-	query := `SELECT count(*) FROM organizations.workspaces WHERE false`
+	query := `SELECT (SELECT count(*) FROM organizations.workspaces WHERE false)+(SELECT count(*) FROM identity.resolve_session(NULL) WHERE false)`
 	if s.role == "worker" {
-		query = `SELECT count(*) FROM eventing.outbox WHERE false`
+		query = `SELECT (SELECT count(*) FROM eventing.outbox WHERE false)+(SELECT count(actor_service_id) FROM eventing.consumer_receipts WHERE false)`
 	}
 	var count int64
 	if err := s.pool.QueryRow(ctx, query).Scan(&count); err != nil {
@@ -157,30 +157,4 @@ func rollback(tx pgx.Tx) error {
 		return fault("rollback", err)
 	}
 	return nil
-}
-
-// protectedTX binds principal and scope transaction-locally. SET LOCAL values
-// disappear on commit/rollback before the connection returns to the pool.
-func (s *Store) protectedTX(ctx context.Context, actor, workspace, permission string) (pgx.Tx, error) {
-	if s.role != "api" {
-		return nil, ErrUnsafeRole
-	}
-	if !validID(actor) || !validID(workspace) {
-		return nil, ErrNotFound
-	}
-	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
-	if err != nil {
-		return nil, fault("begin", err)
-	}
-	if _, err = tx.Exec(ctx, `SELECT set_config('app.actor_id',$1,true),set_config('app.workspace_id',$2,true)`, actor, workspace); err != nil {
-		return nil, errors.Join(fault("tenant_context", err), rollback(tx))
-	}
-	var allowed bool
-	if err = tx.QueryRow(ctx, `SELECT organizations.authorize_workspace($1)`, permission).Scan(&allowed); err != nil {
-		return nil, errors.Join(fault("authorize", err), rollback(tx))
-	}
-	if !allowed {
-		return nil, errors.Join(ErrNotFound, rollback(tx))
-	}
-	return tx, nil
 }

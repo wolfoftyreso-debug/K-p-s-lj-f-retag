@@ -140,13 +140,16 @@ func withDatabase(t *testing.T, dsn, db string) string {
 
 func (h *databaseHarness) reset(t *testing.T) {
 	t.Helper()
-	_, err := h.admin.Exec(h.ctx, `TRUNCATE eventing.consumer_receipts,eventing.workspace_revisions,eventing.outbox,audit.events,
+	_, err := h.admin.Exec(h.ctx, `TRUNCATE identity.login_transactions,identity.login_admission,audit.security_events,identity.sessions,identity.external_identities,eventing.consumer_receipts,eventing.workspace_revisions,eventing.outbox,audit.events,
 organizations.workspace_permissions,organizations.workspace_memberships,organizations.workspaces,
 organizations.organization_memberships,organizations.organizations,identity.users;
 INSERT INTO identity.users(id,active) VALUES
 ('00000000-0000-4000-8000-000000000001',true),('00000000-0000-4000-8000-000000000002',true),
 ('00000000-0000-4000-8000-000000000003',true),('00000000-0000-4000-8000-000000000004',true),
 ('00000000-0000-4000-8000-000000000005',false),('00000000-0000-4000-8000-000000000006',true);
+INSERT INTO identity.external_identities(issuer,subject,provider,user_id) SELECT 'https://synthetic.invalid',id::text,'synthetic',id FROM identity.users;
+INSERT INTO identity.sessions(id,token_hash,user_id,issuer,subject,security_version,authenticated_at,created_at,last_accepted_at,absolute_expires_at,assurance_level,assurance_evidence)
+SELECT gen_random_uuid(),sha256(convert_to(id::text,'UTF8')),id,'https://synthetic.invalid',id::text,security_version,transaction_timestamp(),transaction_timestamp(),transaction_timestamp(),transaction_timestamp()+interval '8 hours','UNKNOWN','' FROM identity.users;
 INSERT INTO organizations.organizations(id) VALUES('20000000-0000-4000-8000-000000000001');
 INSERT INTO organizations.organization_memberships(organization_id,user_id) VALUES('20000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000003');
 INSERT INTO organizations.workspaces(id,owner_kind,owner_user_id,owner_organization_id,name) VALUES
@@ -168,8 +171,8 @@ SELECT workspace_id,user_id,'workspace.update' FROM organizations.workspace_memb
 		t.Fatal(err)
 	}
 }
-func command(actor, workspace string, version int64) UpdateWorkspaceNameCommand {
-	return UpdateWorkspaceNameCommand{ActorID: actor, WorkspaceID: workspace, Name: "Changed workspace", ExpectedVersion: version, RequestID: "30000000-0000-4000-8000-000000000001", CorrelationID: "30000000-0000-4000-8000-000000000002"}
+func command(actor, workspace string, version int64) fixtureWorkspaceCommand {
+	return fixtureWorkspaceCommand{ActorID: actor, UpdateWorkspaceNameCommand: UpdateWorkspaceNameCommand{WorkspaceID: workspace, Name: "Changed workspace", ExpectedVersion: version, RequestID: "30000000-0000-4000-8000-000000000001", CorrelationID: "30000000-0000-4000-8000-000000000002"}}
 }
 func assertCount(t *testing.T, h *databaseHarness, query string, want int64, args ...any) {
 	t.Helper()

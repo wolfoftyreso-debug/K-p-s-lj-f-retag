@@ -22,8 +22,12 @@ New-Item -ItemType Directory -Path $taskEvidence -Force | Out-Null
 
 & python scripts/check-docs.py
 if ($LASTEXITCODE -ne 0) { throw 'documentation link check failed' }
-& openapi-spec-validator api/openapi/package-a.json
-if ($LASTEXITCODE -ne 0) { throw 'OpenAPI contract validation failed' }
+$taskContracts = @(Get-ChildItem -LiteralPath 'api/openapi' -Filter '*.json' -File | Sort-Object Name)
+if ($taskContracts.Count -eq 0) { throw 'No OpenAPI contracts found' }
+foreach ($taskContract in $taskContracts) {
+    & openapi-spec-validator $taskContract.FullName
+    if ($LASTEXITCODE -ne 0) { throw ('OpenAPI contract validation failed: ' + $taskContract.Name) }
+}
 
 $taskSources = @(git ls-files --cached --others --exclude-standard -- '*.go' | Sort-Object -Unique)
 if ($LASTEXITCODE -ne 0 -or $taskSources.Count -eq 0) { throw 'Cannot enumerate Go source files' }
@@ -65,4 +69,4 @@ if ($LASTEXITCODE -ne 0) { throw 'working-tree secret scan failed' }
 if ($LASTEXITCODE -ne 0) { throw 'Git history secret scan failed' }
 & git diff --check
 if ($LASTEXITCODE -ne 0) { throw 'diff whitespace check failed' }
-Write-Output 'PASS all Package A verification commands'
+Write-Output 'PASS all foundation verification commands'

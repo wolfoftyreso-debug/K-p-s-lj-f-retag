@@ -13,6 +13,7 @@ import (
 
 	"github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/config"
 	"github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/httpapi"
+	"github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/identity"
 	"github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/lifecycle"
 	"github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/store"
 )
@@ -34,8 +35,8 @@ func run(ctx context.Context, lookup func(string) string, logger *slog.Logger) e
 		return errors.New("configuration_invalid")
 	}
 	startup, cancelStartup := context.WithTimeout(ctx, cfg.StartupTimeout)
+	defer cancelStartup()
 	database, err := store.Open(startup, cfg.DatabaseURL, "api")
-	cancelStartup()
 	if err != nil {
 		if ctx.Err() != nil {
 			logger.Info("process_stopped", "phase", "startup")
@@ -44,7 +45,24 @@ func run(ctx context.Context, lookup func(string) string, logger *slog.Logger) e
 		return errors.New("database_startup_failed")
 	}
 	defer database.Close()
-	handler, err := httpapi.New(httpapi.Options{Ready: database.Ping, Logger: logger, ReadinessTimeout: cfg.ReadinessTimeout, RequestTimeout: cfg.RequestTimeout, MaxRequestBody: cfg.MaxRequestBody})
+	var protected http.Handler
+	if cfg.AuthenticationMode == "oidc" {
+		flow, err := identity.NewOIDC(startup, cfg.Identity)
+		if err != nil {
+			if ctx.Err() != nil {
+				logger.Info("process_stopped", "phase", "startup")
+				return nil
+			}
+			return errors.New("identity_startup_failed")
+		}
+		defer flow.Close()
+		protected, err = httpapi.NewIdentityHandler(database, flow, cfg.PublicOrigin, logger)
+		if err != nil {
+			return errors.New("identity_http_configuration_invalid")
+		}
+	}
+	cancelStartup()
+	handler, err := httpapi.New(httpapi.Options{Ready: database.Ping, Protected: protected, Logger: logger, ReadinessTimeout: cfg.ReadinessTimeout, RequestTimeout: cfg.RequestTimeout, MaxRequestBody: cfg.MaxRequestBody})
 	if err != nil {
 		return errors.New("http_configuration_invalid")
 	}
@@ -61,7 +79,7 @@ func run(ctx context.Context, lookup func(string) string, logger *slog.Logger) e
 		}
 		return errors.New("http_listen_failed")
 	}
-	logger.Info("process_started", "authentication", "unavailable")
+	logger.Info("process_started", "authentication", cfg.AuthenticationMode)
 	err = lifecycle.Serve(ctx, server, listener, cfg.ShutdownTimeout, func() {
 		handler.BeginShutdown()
 		logger.Info("process_draining")

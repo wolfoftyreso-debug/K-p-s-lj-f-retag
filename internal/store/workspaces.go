@@ -21,9 +21,9 @@ type Workspace struct {
 	UpdatedAt           time.Time `json:"updated_at"`
 }
 type UpdateWorkspaceNameCommand struct {
-	ActorID, WorkspaceID, Name string
-	ExpectedVersion            int64
-	RequestID, CorrelationID   string
+	WorkspaceID, Name        string
+	ExpectedVersion          int64
+	RequestID, CorrelationID string
 }
 
 func validName(name string) bool {
@@ -46,8 +46,8 @@ func scanWorkspace(row pgx.Row) (Workspace, error) {
 
 const workspaceColumns = `id::text,owner_kind,owner_user_id::text,owner_organization_id::text,name,version,updated_at`
 
-func (s *Store) ReadWorkspace(ctx context.Context, actorID, workspaceID string) (w Workspace, err error) {
-	tx, err := s.protectedTX(ctx, actorID, workspaceID, "workspace.read")
+func (s *Store) ReadWorkspaceSession(ctx context.Context, hash []byte, workspaceID string) (w Workspace, err error) {
+	tx, _, err := s.protectedSessionTX(ctx, hash, workspaceID, "workspace.read")
 	if err != nil {
 		return w, err
 	}
@@ -59,19 +59,22 @@ func (s *Store) ReadWorkspace(ctx context.Context, actorID, workspaceID string) 
 	if err != nil {
 		return Workspace{}, fault("workspace_read", err)
 	}
+	if err = acceptSession(ctx, tx, hash); err != nil {
+		return Workspace{}, err
+	}
 	if err = tx.Commit(ctx); err != nil {
 		return Workspace{}, fault("commit", err)
 	}
 	return w, nil
 }
 
-// UpdateWorkspaceName is the single material command in Package A. The mutation,
+// UpdateWorkspaceNameSession is the single material workspace command. The mutation,
 // bounded audit evidence and minimized outbox envelope share one transaction.
-func (s *Store) UpdateWorkspaceName(ctx context.Context, c UpdateWorkspaceNameCommand) (w Workspace, err error) {
+func (s *Store) UpdateWorkspaceNameSession(ctx context.Context, hash []byte, c UpdateWorkspaceNameCommand) (w Workspace, err error) {
 	if !validName(c.Name) || c.ExpectedVersion < 1 || !validID(c.RequestID) || !validID(c.CorrelationID) {
 		return w, ErrInvalid
 	}
-	tx, err := s.protectedTX(ctx, c.ActorID, c.WorkspaceID, "workspace.update")
+	tx, session, err := s.protectedSessionTX(ctx, hash, c.WorkspaceID, "workspace.update")
 	if err != nil {
 		return w, err
 	}
@@ -101,7 +104,7 @@ func (s *Store) UpdateWorkspaceName(ctx context.Context, c UpdateWorkspaceNameCo
 	}
 	_, err = tx.Exec(ctx, `INSERT INTO audit.events(id,workspace_id,actor_user_id,action,target_kind,target_id,request_id,correlation_id,result,previous_version,resource_version,metadata)
 VALUES($1,$2,$3,'workspace.name_updated','Workspace',$2,$4,$5,'SUCCESS',$6,$7,jsonb_build_object('previous_version',$6::bigint,'version',$7::bigint))`,
-		auditID, c.WorkspaceID, c.ActorID, c.RequestID, c.CorrelationID, c.ExpectedVersion, w.Version)
+		auditID, c.WorkspaceID, session.Principal.UserID, c.RequestID, c.CorrelationID, c.ExpectedVersion, w.Version)
 	if err != nil {
 		return Workspace{}, fault("audit_append", err)
 	}
@@ -109,6 +112,9 @@ VALUES($1,$2,$3,'workspace.name_updated','Workspace',$2,$4,$5,'SUCCESS',$6,$7,js
 VALUES($1,$2,$3,$4,'WorkspaceNameChanged',1,'{}'::jsonb,$5)`, eventID, c.WorkspaceID, auditID, w.Version, c.CorrelationID)
 	if err != nil {
 		return Workspace{}, fault("outbox_append", err)
+	}
+	if err = acceptSession(ctx, tx, hash); err != nil {
+		return Workspace{}, err
 	}
 	if err = tx.Commit(ctx); err != nil {
 		return Workspace{}, fault("commit", err)

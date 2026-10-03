@@ -3,7 +3,7 @@
   "info": {
     "title": "Package A operational API",
     "version": "0.1.0",
-    "description": "Operational health contract only. No marketplace or authentication journey is implemented. The normal API composition denies all /api/v1 protected requests until an approved authentication adapter is integrated."
+    "description": "Operational health contract preserved from Package A. P0.4 authentication/session/workspace backend contracts are defined separately in p0.4.json. Explicit disabled authentication mode denies all protected requests."
   },
   "paths": {
     "/health/live": {

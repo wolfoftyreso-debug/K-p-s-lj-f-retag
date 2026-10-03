@@ -1,4 +1,4 @@
-# Package A dependency inventory
+# Foundation dependency inventory
 
 This records application dependencies and verification tools, not a legal opinion or a production artifact SBOM. Vulnerability results belong to the dated delivery evidence. No new dependency is justified by hypothetical future product functionality.
 
@@ -11,8 +11,13 @@ This records application dependencies and verification tools, not a legal opinio
 | github.com/jackc/puddle/v2 | v2.2.2 | pgx pool synchronization | MIT |
 | golang.org/x/sync | v0.21.0 | Transitive concurrency primitives | BSD-3-Clause |
 | golang.org/x/text | v0.39.0 | Transitive encoding support; security-patched floor | BSD-3-Clause |
+| github.com/coreos/go-oidc/v3 | v3.21.0 | OIDC discovery and maintained ID-token validation | Apache-2.0 |
+| github.com/go-jose/go-jose/v4 | v4.1.4 | Public JWKS parsing and maintained JOSE signature verification | Apache-2.0 |
+| golang.org/x/oauth2 | v0.37.0 | Authorization code and PKCE protocol exchange | BSD-3-Clause |
 
 `go.mod` fixes selected versions, `go.sum` supplies module integrity hashes, and `go mod verify` checks the downloaded module cache. SQL is written explicitly; no ORM, application framework, external queue client or auth vendor SDK is introduced. Third-party notices must accompany future distributable artifacts where licenses require them. The repository's own license and publication policy remain D13.
+
+P0.4 adds maintained protocol libraries rather than implementing JWT cryptography or a password system. Their upstream module versions and license files were reviewed on 2026-10-03; the dated vulnerability/SAST result belongs to P0.4 verification, not to Package A's historical scan. No provider SDK or identity tenant is required for the synthetic protocol tests.
 
 The initial scan found reachable [GO-2026-5970 / CVE-2026-56852](https://pkg.go.dev/vuln/GO-2026-5970) in the initial indirect `x/text v0.29.0`. It was raised to the fixed `v0.39.0`; module resolution also raised `x/sync` to `v0.21.0`. Verification must rerun after that change. The scan gate converts govulncheck's JSON stream through its official text handler because successful JSON generation alone does not indicate that no vulnerabilities were found.
 

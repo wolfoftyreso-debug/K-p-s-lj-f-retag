@@ -2,6 +2,8 @@
 
 Implemented scope: P0.1–P0.3, approved 2026-09-17. Exact acceptance results are in the [completion report](PACKAGE-A-REPORT.md). This runbook describes the local backend foundation; it does not authorize production deployment or later work packages.
 
+**P0.4 update:** the Package A behavior below is historical. Current authentication/session contracts and changed configuration are in the [identity runbook](P0.4-IDENTITY.md). Current API startup requires explicit `AUTHENTICATION_MODE=disabled` for health-only/protected-deny operation, or a complete `oidc` configuration. Production workspace commands now require a validated session inside the database transaction, not a caller-supplied internal User ID. Publication/CI are authorized and Package A's exact successful runs are recorded in the [release gate](PACKAGE-A-RELEASE-GATE.md).
+
 ## Runtime boundaries
 
 `cmd/api`, `cmd/worker` and `cmd/migrate` build independently. The API and worker share reviewed persistence code and a PostgreSQL database, but use different restricted logins. Neither performs startup migrations. The API exposes operational health and denies all protected `/api/v1` requests: no production authentication adapter or account-management endpoint exists. Actor, role and workspace headers never establish identity.

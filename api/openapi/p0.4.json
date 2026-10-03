@@ -1,0 +1,1085 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "P0.4 identity and workspace backend",
+    "version": "0.4.0",
+    "description": "JSON-only backend protocol contracts. This does not implement a visible authentication screen or establish real-provider conformance. A configured OIDC adapter proves authentication; application PostgreSQL sessions and current scoped grants own authorization. Authentication is not organization membership, seller mandate or verification. No CORS credential access is enabled. All responses are no-store and contain a server-generated X-Request-ID; clients cannot supply trusted actor, role, permission, organization or owner context. Body keys are exact and case-sensitive, duplicate keys and trailing JSON are rejected. All requests remain subject to the configured outer body/time limits. Optional query parameters other than those documented are rejected by callback."
+  },
+  "paths": {
+    "/api/v1/auth/start": {
+      "post": {
+        "operationId": "startAuthentication",
+        "summary": "Create a browser-bound, one-time login transaction",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Authorization URL for the configured provider and binding cookie. No provider screen is configured or rendered by this API.",
+            "headers": {
+              "Set-Cookie": {
+                "description": "Secure, HttpOnly, SameSite=Lax, Path=/, no Domain. The __Host- cookie value is an opaque random credential; never log it.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "authorization_url"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "authorization_url": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "Configured authorization-code URL with server-generated state, nonce, PKCE S256 and fresh-authentication request."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or ambiguous request, unknown body field, invalid command or unsupported content type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, expired, revoked or otherwise invalid authentication. Competing Authorization headers are rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The exact configured Origin or session-bound CSRF proof is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Unsupported HTTP method.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Allow": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Permitted HTTP methods for this route."
+              }
+            }
+          },
+          "429": {
+            "description": "Shared login admission budget exhausted. This limiter is not a claim of account-aware credential-stuffing protection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "string",
+                  "const": "60"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal failure. No internal error, credential or protected resource detail is disclosed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Authentication, persistence or bounded request processing is unavailable. Access fails closed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyCommand"
+              }
+            }
+          }
+        },
+        "description": "POST only with one exact configured Origin and the empty JSON object. Authentication is not required. Sets __Host-marketplace-login for five minutes. Browser binding, state, nonce and verifier are independent random values. No caller return URL or issuer is accepted."
+      }
+    },
+    "/api/v1/auth/callback": {
+      "get": {
+        "operationId": "completeAuthentication",
+        "summary": "Consume and verify an authorization-code callback",
+        "security": [
+          {
+            "LoginBinding": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Allowlisted authenticated session projection. No provider subject, raw claims, token or security version is returned.",
+            "headers": {
+              "Set-Cookie": {
+                "description": "Secure, HttpOnly, SameSite=Lax, Path=/, no Domain. The __Host- cookie value is an opaque random credential; never log it.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or ambiguous request, unknown body field, invalid command or unsupported content type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, expired, revoked or otherwise invalid authentication. Competing Authorization headers are rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The exact configured Origin or session-bound CSRF proof is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Unsupported HTTP method.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Allow": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Permitted HTTP methods for this route."
+              }
+            }
+          },
+          "500": {
+            "description": "Internal failure. No internal error, credential or protected resource detail is disclosed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Authentication, persistence or bounded request processing is unavailable. Access fails closed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/OpaqueToken"
+            },
+            "description": "Exactly one server-generated login state."
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "description": "Exactly one provider authorization code. Never log the query string."
+          },
+          {
+            "name": "iss",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            },
+            "description": "When supplied, must equal the issuer verified by the configured adapter."
+          }
+        ],
+        "description": "Requires exactly one valid __Host-marketplace-login cookie. Only state, code and optional iss are accepted; duplicates, provider error responses and unknown query fields fail. Consumes the persisted browser-bound transaction before the bounded provider exchange; a failed exchange requires a new flow. On success sets a fresh __Host-marketplace-session browser-session cookie and clears the login binding cookie. A prior session is rotated only within the same internal user; switching accounts requires logout. A verified new identity receives no workspace, membership, permission, mandate or verification badge."
+      }
+    },
+    "/api/v1/session": {
+      "get": {
+        "operationId": "getSession",
+        "summary": "Read the current authenticated session",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Allowlisted authenticated session projection. No provider subject, raw claims, token or security version is returned.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or ambiguous request, unknown body field, invalid command or unsupported content type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, expired, revoked or otherwise invalid authentication. Competing Authorization headers are rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The exact configured Origin or session-bound CSRF proof is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Unsupported HTTP method.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Allow": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Permitted HTTP methods for this route."
+              }
+            }
+          },
+          "500": {
+            "description": "Internal failure. No internal error, credential or protected resource detail is disclosed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Authentication, persistence or bounded request processing is unavailable. Access fails closed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Returns only the allowlisted current session and a session-bound CSRF proof. The proof is not an authentication credential. Expiry and revocation remain server-side; do not infer an authorization grant from this response."
+      }
+    },
+    "/api/v1/session/logout": {
+      "post": {
+        "operationId": "revokeCurrentSession",
+        "summary": "Revoke the current application session",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Revocation and security audit committed; current cookie cleared. This does not claim that provider SSO or every provider token was revoked.",
+            "headers": {
+              "Set-Cookie": {
+                "description": "Secure, HttpOnly, SameSite=Lax, Path=/, no Domain. The __Host- cookie value is an opaque random credential; never log it.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or ambiguous request, unknown body field, invalid command or unsupported content type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, expired, revoked or otherwise invalid authentication. Competing Authorization headers are rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The exact configured Origin or session-bound CSRF proof is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Unsupported HTTP method.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Allow": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Permitted HTTP methods for this route."
+              }
+            }
+          },
+          "500": {
+            "description": "Internal failure. No internal error, credential or protected resource detail is disclosed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Authentication, persistence or bounded request processing is unavailable. Access fails closed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Origin"
+          },
+          {
+            "$ref": "#/components/parameters/CSRF"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/session/revoke-all": {
+      "post": {
+        "operationId": "revokeAllSessions",
+        "summary": "Revoke all current application sessions for this authenticated user",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Account security version and session revocation committed atomically with security audit; current cookie cleared. Other device sessions no longer authorize new operations.",
+            "headers": {
+              "Set-Cookie": {
+                "description": "Secure, HttpOnly, SameSite=Lax, Path=/, no Domain. The __Host- cookie value is an opaque random credential; never log it.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or ambiguous request, unknown body field, invalid command or unsupported content type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, expired, revoked or otherwise invalid authentication. Competing Authorization headers are rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The exact configured Origin or session-bound CSRF proof is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Unsupported HTTP method.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Allow": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Permitted HTTP methods for this route."
+              }
+            }
+          },
+          "500": {
+            "description": "Internal failure. No internal error, credential or protected resource detail is disclosed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Authentication, persistence or bounded request processing is unavailable. Access fails closed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Origin"
+          },
+          {
+            "$ref": "#/components/parameters/CSRF"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyCommand"
+              }
+            }
+          }
+        },
+        "description": "Requires an active authenticated session, exact Origin and matching CSRF proof. No user/owner/organization selector is accepted; the target is derived from the authenticated session."
+      }
+    },
+    "/api/v1/workspaces/{workspace_id}": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "description": "Requested scope only, never evidence of authorization."
+        }
+      ],
+      "get": {
+        "operationId": "getWorkspace",
+        "summary": "Read a workspace with current explicit permission",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Protected workspace representation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workspace"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or ambiguous request, unknown body field, invalid command or unsupported content type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, expired, revoked or otherwise invalid authentication. Competing Authorization headers are rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The exact configured Origin or session-bound CSRF proof is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Workspace does not exist or is inaccessible; these cases have the same response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Unsupported HTTP method.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Allow": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Permitted HTTP methods for this route."
+              }
+            }
+          },
+          "500": {
+            "description": "Internal failure. No internal error, credential or protected resource detail is disclosed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Authentication, persistence or bounded request processing is unavailable. Access fails closed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "description": "Requires current workspace.read through active explicit membership. Owner identity or organization membership alone grants nothing. Session/account and permission are revalidated inside the resource transaction."
+      },
+      "patch": {
+        "operationId": "updateWorkspaceName",
+        "summary": "Update only the workspace name with optimistic concurrency",
+        "security": [
+          {
+            "CookieSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated workspace. State, audit and outbox committed atomically.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workspace"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed or ambiguous request, unknown body field, invalid command or unsupported content type.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, malformed, expired, revoked or otherwise invalid authentication. Competing Authorization headers are rejected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The exact configured Origin or session-bound CSRF proof is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Workspace does not exist or is inaccessible; these cases have the same response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Unsupported HTTP method.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Allow": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Permitted HTTP methods for this route."
+              }
+            }
+          },
+          "409": {
+            "description": "Expected version does not match the current authorized resource version.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal failure. No internal error, credential or protected resource detail is disclosed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Authentication, persistence or bounded request processing is unavailable. Access fails closed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Origin"
+          },
+          {
+            "$ref": "#/components/parameters/CSRF"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkspaceName"
+              }
+            }
+          }
+        },
+        "description": "Requires current workspace.read and workspace.update. The only accepted fields are name and expected_version. Actor, owner, role, organization and permission fields cannot grant authority and are rejected. Failed validation, denial or rollback does not extend session idle activity."
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "CookieSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-marketplace-session",
+        "description": "Opaque 256-bit browser session, one canonical cookie only. Secure/HttpOnly/SameSite=Lax/Path=/ with no Domain. Hash-only persistence and authoritative database expiry/revocation. Bearer Authorization headers are not supported."
+      },
+      "LoginBinding": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-marketplace-login",
+        "description": "Short-lived opaque browser binding for a persisted one-time OIDC transaction; not an application session."
+      }
+    },
+    "parameters": {
+      "Origin": {
+        "name": "Origin",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uri"
+        },
+        "description": "Exactly one header equal to the configured HTTPS application origin, including any explicit port. Missing, null, sibling or foreign origins are rejected."
+      },
+      "CSRF": {
+        "name": "X-CSRF-Token",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/OpaqueToken"
+        },
+        "description": "Exactly one session-bound proof returned by GET /api/v1/session or successful callback; compared in constant time. A proof without its authenticated session cookie grants nothing."
+      }
+    },
+    "schemas": {
+      "OpaqueToken": {
+        "type": "string",
+        "minLength": 43,
+        "maxLength": 43,
+        "pattern": "^[A-Za-z0-9_-]{43}$",
+        "description": "Canonical unpadded base64url encoding of 32 bytes; noncanonical encodings are rejected where used as credentials."
+      },
+      "EmptyCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "maxProperties": 0
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": [
+              "code",
+              "request_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "authentication_required",
+                  "csrf_rejected",
+                  "invalid_request",
+                  "not_found",
+                  "version_conflict",
+                  "rate_limited",
+                  "method_not_allowed",
+                  "dependency_unavailable",
+                  "request_timeout",
+                  "internal_error"
+                ]
+              },
+              "request_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
+        }
+      },
+      "Session": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "principal_id",
+          "user_id",
+          "session_id",
+          "actor_kind",
+          "authenticated_at",
+          "absolute_expires_at",
+          "idle_expires_at",
+          "csrf_token"
+        ],
+        "properties": {
+          "principal_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "session_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Non-secret internal session identifier, not the browser credential."
+          },
+          "actor_kind": {
+            "const": "HUMAN"
+          },
+          "authenticated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "absolute_expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "idle_expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "csrf_token": {
+            "$ref": "#/components/schemas/OpaqueToken"
+          }
+        }
+      },
+      "UpdateWorkspaceName": {
+        "type": "object",
+        "required": [
+          "name",
+          "expected_version"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "description": "Nonempty Unicode name with no leading/trailing whitespace or control characters."
+          },
+          "expected_version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          }
+        }
+      },
+      "Workspace": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "owner_kind",
+          "name",
+          "version",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "owner_kind": {
+            "type": "string",
+            "enum": [
+              "PERSON",
+              "ORGANIZATION"
+            ]
+          },
+          "owner_user_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "owner_organization_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "oneOf": [
+          {
+            "properties": {
+              "owner_kind": {
+                "const": "PERSON"
+              }
+            },
+            "required": [
+              "owner_user_id"
+            ],
+            "not": {
+              "required": [
+                "owner_organization_id"
+              ]
+            }
+          },
+          {
+            "properties": {
+              "owner_kind": {
+                "const": "ORGANIZATION"
+              }
+            },
+            "required": [
+              "owner_organization_id"
+            ],
+            "not": {
+              "required": [
+                "owner_user_id"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

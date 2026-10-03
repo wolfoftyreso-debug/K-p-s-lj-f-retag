@@ -13,6 +13,7 @@ import (
 
 	"github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/config"
 	"github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/httpapi"
+	"github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/identity"
 	"github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/lifecycle"
 	"github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/store"
 )
@@ -44,6 +45,10 @@ func run(ctx context.Context, lookup func(string) string, logger *slog.Logger) e
 		return errors.New("database_startup_failed")
 	}
 	defer database.Close()
+	// Attribution follows successful process capability validation. A service
+	// principal carries no human User or browser session and grants no new access.
+	actor := identity.OutboxWorkerPrincipal()
+	logger = logger.With("actor_kind", actor.Kind, "principal_id", actor.PrincipalID, "credential_source", actor.CredentialSource)
 	processor, err := store.NewProcessor(database, store.WorkerOptions{LeaseDuration: cfg.WorkerLeaseDuration, RetryBase: cfg.WorkerRetryBase, MaxAttempts: cfg.WorkerMaxAttempts})
 	if err != nil {
 		return errors.New("worker_configuration_invalid")
