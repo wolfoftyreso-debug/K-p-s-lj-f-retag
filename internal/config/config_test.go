@@ -14,7 +14,7 @@ func TestLoadValid(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if cfg.ShutdownTimeout != 15*time.Second || cfg.MaxRequestBody != 16384 {
+			if cfg.ShutdownTimeout != 15*time.Second || cfg.MaxRequestBody != 131072 {
 				t.Fatalf("unexpected defaults: %s %d", cfg.ShutdownTimeout, cfg.MaxRequestBody)
 			}
 		})

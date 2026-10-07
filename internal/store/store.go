@@ -103,7 +103,7 @@ func (s *Store) validateRole(ctx context.Context) error {
  privileged.rolname IN ('pg_read_all_data','pg_write_all_data','pg_read_server_files','pg_write_server_files','pg_execute_server_program'))),
 pg_has_role(current_user,'foundation_api','MEMBER'), pg_has_role(current_user,'foundation_worker','MEMBER'),
 EXISTS(SELECT FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
- WHERE n.nspname IN ('foundation_schema','identity','organizations','audit','eventing') AND pg_has_role(current_user,c.relowner,'MEMBER'))
+ WHERE n.nspname IN ('foundation_schema','identity','organizations','audit','eventing','listings') AND pg_has_role(current_user,c.relowner,'MEMBER'))
 FROM pg_roles r WHERE r.rolname=current_user`, s.pool.Config().ConnConfig.User).Scan(&unsafe, &api, &worker, &owns)
 	if err != nil {
 		return fault("role_check", err)
@@ -117,7 +117,7 @@ FROM pg_roles r WHERE r.rolname=current_user`, s.pool.Config().ConnConfig.User).
 func (s *Store) Close() { s.pool.Close() }
 func (s *Store) Ping(ctx context.Context) error {
 	// Validate a relation the process actually depends on, not merely the socket.
-	query := `SELECT (SELECT count(*) FROM organizations.workspaces WHERE false)+(SELECT count(*) FROM identity.resolve_session(NULL) WHERE false)`
+	query := `SELECT (SELECT count(*) FROM organizations.workspaces WHERE false)+(SELECT count(*) FROM identity.resolve_session(NULL) WHERE false)+(SELECT count(*) FROM listings.businesses WHERE false)+(SELECT count(*) FROM listings.drafts WHERE false)+(SELECT count(*) FROM listings.command_receipts WHERE false)`
 	if s.role == "worker" {
 		query = `SELECT (SELECT count(*) FROM eventing.outbox WHERE false)+(SELECT count(actor_service_id) FROM eventing.consumer_receipts WHERE false)`
 	}

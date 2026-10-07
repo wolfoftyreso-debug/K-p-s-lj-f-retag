@@ -483,21 +483,49 @@ func TestOIDCConfigAndDiscoveryBoundaries(t *testing.T) {
 func TestOIDCCancellationAndConcurrentExchange(t *testing.T) {
 	f := newProtocolFixture(t)
 	a := f.adapter(t)
+	// Concurrent exchanges exercise the real token/JWKS transport and signature
+	// verification. Sign the immutable valid fixture once: generating twelve RSA
+	// signatures while serve holds its shared mutex accidentally serializes keys
+	// behind expensive fixture work, exceeding the real client's timeout under
+	// race instrumentation. Production timeout and exchange concurrency stay intact.
+	payload, err := json.Marshal(f.claims)
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw := sign(t, f.key, payload, nil)
+	f.mu.Lock()
+	f.rawToken = raw
+	f.mu.Unlock()
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 	if _, err := a.Exchange(ctx, "synthetic-code", f.verifier, f.nonce, f.now); !errors.Is(err, context.Canceled) {
 		t.Fatalf("got %v", err)
 	}
+	if f.tokenRequests.Load() != 0 || f.keyRequests.Load() != 0 {
+		t.Fatal("already canceled exchange reached the provider")
+	}
+	const concurrentExchanges = 12
+	start := make(chan struct{})
 	var group sync.WaitGroup
-	for range 12 {
+	for range concurrentExchanges {
 		group.Go(func() {
-			if _, err := a.Exchange(context.Background(), "synthetic-code", f.verifier, f.nonce, f.now); err != nil {
+			<-start
+			auth, err := a.Exchange(context.Background(), "synthetic-code", f.verifier, f.nonce, f.now)
+			if err != nil {
 				t.Errorf("parallel exchange failed: %v", err)
+			} else if auth.Subject != "synthetic-provider-subject" || auth.Issuer != f.server.URL || !auth.EmailVerified {
+				t.Error("parallel exchange did not resolve validated canonical facts")
 			}
 		})
 	}
+	close(start)
 	group.Wait()
+	if f.tokenRequests.Load() != concurrentExchanges || f.keyRequests.Load() != concurrentExchanges {
+		t.Fatalf("parallel protocol coverage: token=%d keys=%d want=%d each", f.tokenRequests.Load(), f.keyRequests.Load(), concurrentExchanges)
+	}
+	f.mu.Lock()
 	f.blockToken = true
+	f.mu.Unlock()
 	ctx, cancel = context.WithCancel(context.Background())
 	defer cancel()
 	result := make(chan error, 1)

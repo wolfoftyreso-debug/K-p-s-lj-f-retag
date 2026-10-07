@@ -140,7 +140,7 @@ func withDatabase(t *testing.T, dsn, db string) string {
 
 func (h *databaseHarness) reset(t *testing.T) {
 	t.Helper()
-	_, err := h.admin.Exec(h.ctx, `TRUNCATE identity.login_transactions,identity.login_admission,audit.security_events,identity.sessions,identity.external_identities,eventing.consumer_receipts,eventing.workspace_revisions,eventing.outbox,audit.events,
+	_, err := h.admin.Exec(h.ctx, `TRUNCATE listings.command_receipts,audit.aggregate_events,listings.drafts,listings.businesses,organizations.personal_drafting_assignments,identity.login_transactions,identity.login_admission,audit.security_events,identity.sessions,identity.external_identities,eventing.consumer_receipts,eventing.workspace_revisions,eventing.outbox,audit.events,
 organizations.workspace_permissions,organizations.workspace_memberships,organizations.workspaces,
 organizations.organization_memberships,organizations.organizations,identity.users;
 INSERT INTO identity.users(id,active) VALUES

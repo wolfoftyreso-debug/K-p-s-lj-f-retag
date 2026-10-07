@@ -1,0 +1,178 @@
+{
+  "baseline_commit": "fe48fe99f54900250b46b3dfa640d30018570e6b",
+  "implementation_commit": "df44086c0b0772ef515149d40b152a875a95d847",
+  "verified_source_commit": "d013a55393db286f35a62319425af201dd7b9efd",
+  "date": "2026-10-07",
+  "scope": "Private synthetic-tested Business/Listing Draft/Preview; no connected UI, publication, uploads, real-data admission or AWS.",
+  "local": {
+    "platform": "Windows/amd64",
+    "go": "1.27.1",
+    "postgresql": "18.6",
+    "require_integration": true,
+    "tests.jsonl": {
+      "passed_packages": 9,
+      "passed_top_level_tests": 88,
+      "passed_subtests": 326,
+      "failed_events": 0,
+      "skipped_tests": 0,
+      "raw_sha256": "df183e3889cba4f7d385c97bf13f99ceef05b9f8ec199af986c91efffebdd40f",
+      "package_results": [
+        {
+          "Package": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/cmd/api",
+          "Elapsed": 1.083
+        },
+        {
+          "Package": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/cmd/worker",
+          "Elapsed": 1.102
+        },
+        {
+          "Package": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/config",
+          "Elapsed": 2.138
+        },
+        {
+          "Package": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/listings",
+          "Elapsed": 1.9260000000000002
+        },
+        {
+          "Package": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/lifecycle",
+          "Elapsed": 4.806
+        },
+        {
+          "Package": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/identity",
+          "Elapsed": 11.859
+        },
+        {
+          "Package": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/httpapi",
+          "Elapsed": 18.787
+        },
+        {
+          "Package": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/db/migrations",
+          "Elapsed": 22.22
+        },
+        {
+          "Package": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/store",
+          "Elapsed": 66.956
+        }
+      ]
+    },
+    "race.jsonl": {
+      "passed_packages": 9,
+      "passed_top_level_tests": 88,
+      "passed_subtests": 326,
+      "failed_events": 0,
+      "skipped_tests": 0,
+      "raw_sha256": "36c0cbd830462bfe7764afcbf0542fdaf5d8525cb4a6f48b7d6db91ebcab7bae",
+      "package_results": [
+        {
+          "Package": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/config",
+          "Elapsed": 3.102
+        },
+        {
+          "Package": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/cmd/worker",
+          "Elapsed": 6.786
+        },
+        {
+          "Package": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/listings",
+          "Elapsed": 2.675
+        },
+        {
+          "Package": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/cmd/api",
+          "Elapsed": 17.682
+        },
+        {
+          "Package": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/lifecycle",
+          "Elapsed": 6.741
+        },
+        {
+          "Package": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/httpapi",
+          "Elapsed": 22.264
+        },
+        {
+          "Package": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/identity",
+          "Elapsed": 18.675
+        },
+        {
+          "Package": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/db/migrations",
+          "Elapsed": 29.11
+        },
+        {
+          "Package": "github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/internal/store",
+          "Elapsed": 81.518
+        }
+      ]
+    },
+    "gosec": {
+      "version": "2.29.0",
+      "stats": {
+        "files": 20,
+        "lines": 3369,
+        "nosec": 0,
+        "found": 0
+      },
+      "findings": 0,
+      "errors": 0
+    },
+    "govulncheck": {
+      "version": "1.8.0",
+      "result": "No vulnerabilities found."
+    },
+    "gitleaks": {
+      "version": "8.30.1",
+      "worktree_findings": 0,
+      "history_findings": 0
+    }
+  },
+  "ci": {
+    "run_id": 37628527165,
+    "attempt": 1,
+    "job_id": 112816455226,
+    "url": "https://github.com/wolfoftyreso-debug/K-p-s-lj-f-retag/actions/runs/37628527165",
+    "checkout_commit": "d013a55393db286f35a62319425af201dd7b9efd",
+    "artifact_id": 11484574619,
+    "artifact_sha256": "20cd4a0f74017fd6009beb595039b5a2913919374766e95f67018d1d7e1c05d4",
+    "artifact_expires_at": "2026-10-21T13:29:48Z",
+    "inspected": true,
+    "normal": {
+      "packages": 9,
+      "top": 88,
+      "subtests": 326,
+      "fail": 0,
+      "skip": 0,
+      "live_cancel": true
+    },
+    "race": {
+      "packages": 9,
+      "top": 88,
+      "subtests": 326,
+      "fail": 0,
+      "skip": 0,
+      "live_cancel": true
+    },
+    "gosec_stats": {
+      "files": 20,
+      "lines": 3369,
+      "nosec": 0,
+      "found": 0
+    },
+    "gosec_module": "v2.29.0 (pinned workflow install; binary label dev)",
+    "govulncheck_text": "No vulnerabilities found.",
+    "secret_findings": {
+      "secrets-worktree.json": 0,
+      "secrets-history.json": 0
+    }
+  },
+  "historical_local_failure": {
+    "check": "race",
+    "test": "TestOIDCCancellationAndConcurrentExchange",
+    "cause": "Test-only mutex serialized repeated RSA signing, delaying token/JWKS beyond the unchanged production five-second limit.",
+    "resolution_commit": "d013a55393db286f35a62319425af201dd7b9efd",
+    "evidence_retained_locally": ".tools/evidence/private-drafts-failed-race",
+    "subsequent_full_gate": "passed"
+  },
+  "limitations": [
+    "real-provider/privacy/retention/ingress/operating acceptance open",
+    "No physical network-partition test; COMMIT-return failures injected against real PostgreSQL.",
+    "No deployment/restore/capacity/WCAG/iPhone acceptance",
+    "Final evidence-only commit cannot embed its own SHA; final CI artifact commit.txt and delivery response identify it."
+  ]
+}
