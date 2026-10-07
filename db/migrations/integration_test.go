@@ -75,8 +75,8 @@ func TestIntegrationMigrationApplyRepeatAndDrift(t *testing.T) {
 	if err := conn.QueryRow(ctx, "SELECT count(*) FROM foundation_schema.migrations").Scan(&count); err != nil {
 		t.Fatal(err)
 	}
-	if count != 2 {
-		t.Fatalf("history count=%d, want 2", count)
+	if count != 3 {
+		t.Fatalf("history count=%d, want 3", count)
 	}
 	if _, err := conn.Exec(ctx, "UPDATE foundation_schema.migrations SET checksum=repeat('0',64) WHERE version=1"); err != nil {
 		t.Fatal(err)

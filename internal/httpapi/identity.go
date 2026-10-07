@@ -26,6 +26,7 @@ const loginCookie = "__Host-marketplace-login"
 // IdentityStore is the durable authentication and current-permission boundary.
 // Workspace operations revalidate sessions inside their own PostgreSQL transaction.
 type IdentityStore interface {
+	ListingDraftStore
 	CreateLogin(context.Context, store.LoginTransaction) error
 	ConsumeLogin(context.Context, []byte, []byte) (store.LoginTransaction, error)
 	CompleteLogin(context.Context, identity.Authentication, []byte, []byte, time.Time, string, string) (store.Session, error)
@@ -84,6 +85,9 @@ func (h *IdentityHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			WriteError(w, r, http.StatusForbidden, "csrf_rejected")
 			return
 		}
+	}
+	if h.listingDraft(w, r, hash) {
+		return
 	}
 	switch r.URL.Path {
 	case "/api/v1/session":
@@ -308,7 +312,7 @@ func decodeCommand(r *http.Request, target any, allowedKeys ...string) error {
 		return store.ErrInvalid
 	}
 	data, err := io.ReadAll(r.Body)
-	if err != nil {
+	if err != nil || !validJSONEncoding(data) {
 		return store.ErrInvalid
 	}
 	// Go's decoder normally accepts duplicate keys and null into structs. Reject
@@ -341,6 +345,9 @@ func decodeCommand(r *http.Request, target any, allowedKeys ...string) error {
 		seen[name] = true
 		var value json.RawMessage
 		if err := shape.Decode(&value); err != nil {
+			return store.ErrInvalid
+		}
+		if bytes.Equal(bytes.TrimSpace(value), []byte("null")) {
 			return store.ErrInvalid
 		}
 	}

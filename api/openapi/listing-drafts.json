@@ -1,0 +1,1203 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Private Business and Listing Draft API",
+    "version": "1.0.0",
+    "description": "Approved private drafting slice. All endpoints require a current human session and current server-owned workspace permissions. No public listing, upload, verification or publication workflow exists. All query parameters are rejected. Mutations require exact Origin and CSRF proof; ambiguous cookies or Authorization credentials are rejected. Optional strings may be absent or empty; null, unknown/case-alias/duplicate keys and malformed Unicode are rejected. The bounded HTTP body limit is explicit runtime configuration. Return codes 404 do not distinguish absent from inaccessible resources. A 503 after mutation is an uncertain outcome: retry creation with the original command_id, reconcile PUT using GET and source versions. UUID identifiers are canonical lowercase strings. The default body limit is 128KiB, sufficient for all maximum field lengths including JSON surrogate-pair escapes; a lower configured bound may reject otherwise valid content."
+  },
+  "paths": {
+    "/api/v1/personal-listing-drafts": {
+      "post": {
+        "operationId": "createPersonalListingDraft",
+        "summary": "Create a private draft in the current user's personal drafting workspace",
+        "description": "First use atomically initializes a person-owned workspace, active membership and exactly five scoped grants. Reuse never restores removed grants or revoked membership. Owner/actor are resolved from the current session. Receipt scope is user plus personal-create operation plus command_id.",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CSRFProof": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Must match the configured HTTPS public origin exactly. The authenticated cookie alone cannot authorize a mutation."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDraft"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authorized replay of the same normalized creation command; immutable initial IDs and versions with replayed=true. Use GET for current fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedDraft"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created atomically. Returned versions describe the original creation outcome, not a cached current resource.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedDraft"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{workspace_id}/listing-drafts": {
+      "post": {
+        "operationId": "createListingDraft",
+        "description": "Requires current listing.read_private and listing.create in the requested workspace. Workspace IDs are requested context. Workspace/organization ownership alone grants nothing. Receipt scope also includes the requested workspace.",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CSRFProof": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Must match the configured HTTPS public origin exactly. The authenticated cookie alone cannot authorize a mutation."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDraft"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authorized replay of the same normalized creation command; immutable initial IDs and versions with replayed=true. Use GET for current fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedDraft"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created atomically. Returned versions describe the original creation outcome, not a cached current resource.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedDraft"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{workspace_id}/listing-drafts/{draft_id}": {
+      "get": {
+        "operationId": "readListingDraft",
+        "description": "Current read-private permission is revalidated in the authoritative transaction.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized representation.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Draft"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "replaceListingDraft",
+        "description": "Full replacement of the finite Business/listing fields. Omitted optional strings are cleared. Both positive expected versions are required. Only a changed aggregate increments its version; an exact no-op creates no material audit event. Requires current listing.read_private plus listing.update. A stale version returns 409 version_conflict; reconcile with GET instead of blindly retrying.",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CSRFProof": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "Origin",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Must match the configured HTTPS public origin exactly. The authenticated cookie alone cannot authorize a mutation."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplaceDraft"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current authorized representation.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Draft"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{workspace_id}/listing-drafts/{draft_id}/preview": {
+      "get": {
+        "operationId": "readPrivateListingPreview",
+        "description": "Protected synchronous projection of the current Business/draft versions. Private working label, workspace/owner/identity/grants and audit internals are excluded. Free text can still identify a business; this is not a certified anonymous or public listing.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized representation.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivatePreview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Stable error code and server-generated request ID; no protected resource or credential details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "SessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-marketplace-session"
+      },
+      "CSRFProof": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-Token"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "authentication_required",
+                  "csrf_rejected",
+                  "invalid_request",
+                  "not_found",
+                  "command_conflict",
+                  "version_conflict",
+                  "method_not_allowed",
+                  "dependency_unavailable",
+                  "rate_limited",
+                  "request_timeout",
+                  "internal_error"
+                ]
+              },
+              "request_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+              }
+            },
+            "required": [
+              "code",
+              "request_id"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "CreateDraft": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "command_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "private_label": {
+            "type": "string",
+            "description": "Private working label. Normalized maximum 120 Unicode code points; omitted or empty means unset."
+          },
+          "activity_description": {
+            "type": "string",
+            "description": "Business activity, separate from listing presentation. Normalized maximum 2000 Unicode code points."
+          },
+          "country": {
+            "type": "string",
+            "description": "Optional two ASCII letters, normalized to uppercase. Format validation does not establish country eligibility or launch markets."
+          },
+          "region": {
+            "type": "string",
+            "description": "Optional region text. Normalized maximum 120 Unicode code points."
+          },
+          "title": {
+            "type": "string",
+            "description": "Normalized maximum 160 Unicode code points."
+          },
+          "description": {
+            "type": "string",
+            "description": "Normalized maximum 8000 Unicode code points; LF and TAB permitted."
+          },
+          "sale_subject": {
+            "type": "string",
+            "enum": [
+              "",
+              "legal_entity",
+              "operating_business",
+              "business_division",
+              "asset_package"
+            ]
+          },
+          "transfer_structure": {
+            "type": "string",
+            "enum": [
+              "",
+              "share_sale",
+              "business_transfer"
+            ]
+          },
+          "sale_context": {
+            "type": "string",
+            "enum": [
+              "",
+              "ordinary_sale",
+              "succession",
+              "restructuring",
+              "insolvency",
+              "other"
+            ]
+          },
+          "sale_method": {
+            "type": "string",
+            "enum": [
+              "",
+              "asking_price",
+              "negotiation",
+              "invitation_for_offers",
+              "time_limited_bidding"
+            ]
+          }
+        },
+        "required": [
+          "command_id"
+        ]
+      },
+      "ReplaceDraft": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expected_business_version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "expected_listing_version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "private_label": {
+            "type": "string",
+            "description": "Private working label. Normalized maximum 120 Unicode code points; omitted or empty means unset."
+          },
+          "activity_description": {
+            "type": "string",
+            "description": "Business activity, separate from listing presentation. Normalized maximum 2000 Unicode code points."
+          },
+          "country": {
+            "type": "string",
+            "description": "Optional two ASCII letters, normalized to uppercase. Format validation does not establish country eligibility or launch markets."
+          },
+          "region": {
+            "type": "string",
+            "description": "Optional region text. Normalized maximum 120 Unicode code points."
+          },
+          "title": {
+            "type": "string",
+            "description": "Normalized maximum 160 Unicode code points."
+          },
+          "description": {
+            "type": "string",
+            "description": "Normalized maximum 8000 Unicode code points; LF and TAB permitted."
+          },
+          "sale_subject": {
+            "type": "string",
+            "enum": [
+              "",
+              "legal_entity",
+              "operating_business",
+              "business_division",
+              "asset_package"
+            ]
+          },
+          "transfer_structure": {
+            "type": "string",
+            "enum": [
+              "",
+              "share_sale",
+              "business_transfer"
+            ]
+          },
+          "sale_context": {
+            "type": "string",
+            "enum": [
+              "",
+              "ordinary_sale",
+              "succession",
+              "restructuring",
+              "insolvency",
+              "other"
+            ]
+          },
+          "sale_method": {
+            "type": "string",
+            "enum": [
+              "",
+              "asking_price",
+              "negotiation",
+              "invitation_for_offers",
+              "time_limited_bidding"
+            ]
+          }
+        },
+        "required": [
+          "expected_business_version",
+          "expected_listing_version"
+        ]
+      },
+      "CreatedDraft": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "business_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "listing_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "business_version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "listing_version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "replayed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "workspace_id",
+          "business_id",
+          "listing_id",
+          "business_version",
+          "listing_version",
+          "replayed"
+        ]
+      },
+      "Business": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "private_label": {
+            "type": "string",
+            "description": "Private working label. Normalized maximum 120 Unicode code points; omitted or empty means unset."
+          },
+          "activity_description": {
+            "type": "string",
+            "description": "Business activity, separate from listing presentation. Normalized maximum 2000 Unicode code points."
+          },
+          "country": {
+            "type": "string",
+            "description": "Optional two ASCII letters, normalized to uppercase. Format validation does not establish country eligibility or launch markets."
+          },
+          "region": {
+            "type": "string",
+            "description": "Optional region text. Normalized maximum 120 Unicode code points."
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "workspace_id",
+          "private_label",
+          "activity_description",
+          "country",
+          "region",
+          "version",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "ListingDraft": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "business_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "status": {
+            "type": "string",
+            "const": "DRAFT"
+          },
+          "title": {
+            "type": "string",
+            "description": "Normalized maximum 160 Unicode code points."
+          },
+          "description": {
+            "type": "string",
+            "description": "Normalized maximum 8000 Unicode code points; LF and TAB permitted."
+          },
+          "sale_subject": {
+            "type": "string",
+            "enum": [
+              "",
+              "legal_entity",
+              "operating_business",
+              "business_division",
+              "asset_package"
+            ]
+          },
+          "transfer_structure": {
+            "type": "string",
+            "enum": [
+              "",
+              "share_sale",
+              "business_transfer"
+            ]
+          },
+          "sale_context": {
+            "type": "string",
+            "enum": [
+              "",
+              "ordinary_sale",
+              "succession",
+              "restructuring",
+              "insolvency",
+              "other"
+            ]
+          },
+          "sale_method": {
+            "type": "string",
+            "enum": [
+              "",
+              "asking_price",
+              "negotiation",
+              "invitation_for_offers",
+              "time_limited_bidding"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "workspace_id",
+          "business_id",
+          "status",
+          "title",
+          "description",
+          "sale_subject",
+          "transfer_structure",
+          "sale_context",
+          "sale_method",
+          "version",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "Draft": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "business": {
+            "$ref": "#/components/schemas/Business"
+          },
+          "listing": {
+            "$ref": "#/components/schemas/ListingDraft"
+          }
+        },
+        "required": [
+          "business",
+          "listing"
+        ]
+      },
+      "PrivatePreview": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "listing_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "business_version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "listing_version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "status": {
+            "type": "string",
+            "const": "DRAFT"
+          },
+          "activity_description": {
+            "type": "string",
+            "description": "Business activity, separate from listing presentation. Normalized maximum 2000 Unicode code points."
+          },
+          "country": {
+            "type": "string",
+            "description": "Optional two ASCII letters, normalized to uppercase. Format validation does not establish country eligibility or launch markets."
+          },
+          "region": {
+            "type": "string",
+            "description": "Optional region text. Normalized maximum 120 Unicode code points."
+          },
+          "title": {
+            "type": "string",
+            "description": "Normalized maximum 160 Unicode code points."
+          },
+          "description": {
+            "type": "string",
+            "description": "Normalized maximum 8000 Unicode code points; LF and TAB permitted."
+          },
+          "sale_subject": {
+            "type": "string",
+            "enum": [
+              "",
+              "legal_entity",
+              "operating_business",
+              "business_division",
+              "asset_package"
+            ]
+          },
+          "transfer_structure": {
+            "type": "string",
+            "enum": [
+              "",
+              "share_sale",
+              "business_transfer"
+            ]
+          },
+          "sale_context": {
+            "type": "string",
+            "enum": [
+              "",
+              "ordinary_sale",
+              "succession",
+              "restructuring",
+              "insolvency",
+              "other"
+            ]
+          },
+          "sale_method": {
+            "type": "string",
+            "enum": [
+              "",
+              "asking_price",
+              "negotiation",
+              "invitation_for_offers",
+              "time_limited_bidding"
+            ]
+          }
+        },
+        "required": [
+          "listing_id",
+          "business_version",
+          "listing_version",
+          "status",
+          "activity_description",
+          "country",
+          "region",
+          "title",
+          "description",
+          "sale_subject",
+          "transfer_structure",
+          "sale_context",
+          "sale_method"
+        ]
+      }
+    }
+  }
+}

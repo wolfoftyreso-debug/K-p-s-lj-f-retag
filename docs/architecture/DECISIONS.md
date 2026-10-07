@@ -1,6 +1,12 @@
 # Decision register
 
-Created: 2026-09-16. Updated: 2026-10-03. Status: **Package A baseline committed and verified in clean-checkout Linux CI. P0.4 backend is committed and verified in clean-checkout CI; real-provider acceptance remains open.** See the [local completion report](../operations/PACKAGE-A-REPORT.md) and [release-gate record](../operations/PACKAGE-A-RELEASE-GATE.md), including separately verified follow-up helpers. “Owner” describes the accountable role; named individuals have not been assigned.
+Created: 2026-09-16. Updated: 2026-10-07. Status: **Package A baseline committed and verified in clean-checkout Linux CI. P0.4 backend is committed and verified in clean-checkout CI; real-provider acceptance remains open.** See the [local completion report](../operations/PACKAGE-A-REPORT.md) and [release-gate record](../operations/PACKAGE-A-RELEASE-GATE.md), including separately verified follow-up helpers. “Owner” describes the accountable role; named individuals have not been assigned.
+
+## Private drafting slice — explicit approval 2026-10-07
+
+After the owner accepted the revised design and requested continued building, engineering prepared [the private drafting proposal](DRAFT-SLICE-PROPOSAL.md). A subsequent question explicitly named that document and all six recommended decisions; the owner replied **“Godkänn det föreslagna paketet”**. This authorizes incomplete private Business/Listing drafts, three explicit listing permissions, atomic first-use personal drafting workspace with exactly five scoped grants, durable creation-command replay, additive aggregate audit and synthetic verification with committed clean-checkout evidence. The synchronous private Preview needs no new draft outbox event or invented consumer. Existing Workspace audit/outbox behavior remains intact.
+
+Implementation and reviewable source/CI for this approved backend slice may proceed. Approval does not authorize publication, production uploads, real-customer processing, provider procurement, professional delegation, financial policy, fees, mandates, search or AWS. D07's draft subset is resolved only by this package; publication/financial predicates remain open. D08 retention and D03 actual-provider acceptance remain prerequisites for real-data use. [ADR 0008](../adr/0008-private-listing-drafts.md) records implementation choices and reversal boundaries; test/CI evidence must identify this slice's actual source state.
 
 ## P0.4 continuation — 2026-10-03
 

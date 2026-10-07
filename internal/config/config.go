@@ -96,7 +96,9 @@ func Load(lookup func(string) string, process Process) (Config, error) {
 			return Config{}, fmt.Errorf("WORKER_MAX_ATTEMPTS must be an integer between 1 and 20")
 		}
 	}
-	cfg.MaxRequestBody = 16 * 1024
+	// The private draft contract allows 10,000 description code points plus
+	// bounded labels. Even JSON surrogate-pair escaping fits this finite limit.
+	cfg.MaxRequestBody = 128 * 1024
 	if raw := lookup("MAX_REQUEST_BODY_BYTES"); raw != "" {
 		cfg.MaxRequestBody, err = strconv.ParseInt(raw, 10, 64)
 		if err != nil || cfg.MaxRequestBody < 1 || cfg.MaxRequestBody > 1024*1024 {

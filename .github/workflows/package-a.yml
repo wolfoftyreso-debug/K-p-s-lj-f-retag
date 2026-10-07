@@ -3,7 +3,7 @@ name: Package A
 on:
   pull_request:
   push:
-    branches: [main, docs/phase-0-foundation]
+    branches: [main, docs/phase-0-foundation, 'codex/**']
   workflow_dispatch:
 
 permissions:

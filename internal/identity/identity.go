@@ -85,8 +85,11 @@ type Flow interface {
 type Permission string
 
 const (
-	WorkspaceRead   Permission = "workspace.read"
-	WorkspaceUpdate Permission = "workspace.update"
+	WorkspaceRead      Permission = "workspace.read"
+	WorkspaceUpdate    Permission = "workspace.update"
+	ListingReadPrivate Permission = "listing.read_private"
+	ListingCreate      Permission = "listing.create"
+	ListingUpdate      Permission = "listing.update"
 )
 
 type RoleTemplate string
